@@ -1,7 +1,8 @@
 from PIL import Image, ImageFilter, ImageDraw, ImageFont
 import os
 import random
-from fontTools.ttLib import TTCollection
+from io import BytesIO
+import discord
 
 OPACITY = 200
 LEFT_TEXT = 1160
@@ -24,7 +25,7 @@ def text_narrow(im, text, color, position, font_size, anchor):
     draw_text(im, text, color, position, font_size, 7, anchor=anchor)
 
 def get_random_background():
-    folder_path = "PIL #2/backgrounds"
+    folder_path = "image_creation/backgrounds"
     png_files = [file for file in os.listdir(folder_path)]
 
     image = random.choice(png_files)
@@ -87,3 +88,12 @@ def bottom_bar(im):
     im.paste(rectangle, (shape[0][0], shape[0][1]), rectangle)'''
 
     text(im, "By EpicEfeathers", (255,255,255), (1900, 1060), 35, anchor="rm")
+
+
+
+def convert_to_discord(im):
+    with BytesIO() as image_binary:
+        im.save(image_binary, 'PNG')
+        image_binary.seek(0)
+        
+        return discord.File(fp=image_binary, filename='image.png')

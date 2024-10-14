@@ -2,12 +2,12 @@
 import discord
 from discord import app_commands
 from discord.ext import commands
+from io import BytesIO
 
 import logging
 
-from user_commands import user
-
-
+from image_creation.main_stats.main_stat_page import create_stat_card
+from image_creation.main_stats.functions import convert_to_discord
 
 #handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
 
@@ -15,7 +15,7 @@ activity = discord.Activity(name = "my activity", type = discord.ActivityType.cu
 
 #bot = commands.Bot(command_prefix="",intents=intents,activity=activity)
 
-MY_GUILD = discord.Object(id=915714438273826858)
+MY_GUILD = discord.Object(id=1295425214020194304)
 
 # MyClient class
 class MyClient(discord.Client):
@@ -46,7 +46,10 @@ async def on_ready():
 async def test(interaction: discord.Interaction):
     await interaction.response.send_message(f"{interaction.user.mention}, bot is up and running!", ephemeral=True)
 
-user.user(client)
+@client.tree.command()
+async def stats(interaction: discord.Interaction):
+    im = convert_to_discord(create_stat_card())
+    await interaction.response.send_message(file=im)
 
 # error handling
 '''@client.tree.error
@@ -58,4 +61,5 @@ async def on_app_command_error(interaction: discord.Interaction, error: discord.
         await interaction.response.send_message(f"An error occurred: {error}", ephemeral=True)'''
 
 # CHANGE SECRET ON RELEASE
+# HEY YOUUUUUUUU - CHANGELOG IN DISCORD + VERSION NUMBER :P
 client.run('client secret')#, log_handler = handler)

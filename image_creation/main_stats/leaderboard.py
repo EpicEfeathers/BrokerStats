@@ -14,7 +14,7 @@ RIGHT_Y_POSITION = functions.RIGHT_Y_POSITION
 FONT_PATH = functions.FONT_PATH
 
 def logo(im):
-    profile_pic = Image.open("PIL #2/wb_logo.png")
+    profile_pic = Image.open("image_creation/wb_logo.png")
 
     profile_pic = profile_pic.resize((256,256), Image.LANCZOS).convert("RGBA")
 

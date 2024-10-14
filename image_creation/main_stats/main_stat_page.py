@@ -3,7 +3,7 @@ import os
 import random
 from fontTools.ttLib import TTCollection
 
-import functions
+from image_creation.main_stats import functions
 
 OPACITY = functions.OPACITY
 LEFT_TEXT = functions.LEFT_TEXT
@@ -20,7 +20,7 @@ RIGHT = (1120 - SIZE[1]) - SPACING
 
 
 def logo(im):
-    logo = Image.open("PIL #2/wb_logo.png")
+    logo = Image.open("image_creation/wb_logo.png")
 
     logo = logo.resize((150,134), Image.LANCZOS).convert("RGBA")
 
@@ -28,7 +28,7 @@ def logo(im):
 
 
 def profile_pic(im):
-    profile_pic = Image.open("PIL #2/profile_pic.png")
+    profile_pic = Image.open("image_creation/profile_pic.png")
 
     profile_pic = profile_pic.resize((256,256), Image.LANCZOS).convert("RGBA")
 
@@ -149,6 +149,6 @@ def create_stat_card():
     killsELO(im, "1650", "31")
     gamesELO(im, "2014", "10")
 
-    im.show()
+    return im
 
 create_stat_card()
