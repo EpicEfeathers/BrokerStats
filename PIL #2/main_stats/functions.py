@@ -38,7 +38,6 @@ def get_random_background():
 def create_right_background(im):
     shape = [(1120, 0), (1920, 1080)]
     size = shape[1][0] - shape[0][0], shape[1][1] - shape[0][1]
-    print(size)
     
     # Create rectangle in 'RGBA' mode for transparency support
     rectangle = Image.new('RGBA', size, (0, 0, 0, 0))
@@ -72,3 +71,19 @@ def create_rounded_rectangle(image, size, corner_radius, color, position, scale_
     # Downscale the image to the target size to apply anti-aliasing
     rounded_rectangle = rectangle.resize(size, Image.LANCZOS)
     image.paste(rounded_rectangle, position, rounded_rectangle)
+
+def bottom_bar(im):
+    shape = [(0, 1040), (1120, 1080)]
+    size = shape[1][0] - shape[0][0], shape[1][1] - shape[0][1]
+    
+    # Create rectangle in 'RGBA' mode for transparency support
+    rectangle = Image.new('RGBA', size, (0, 0, 0, 0))
+    
+    draw = ImageDraw.Draw(rectangle)
+    
+    draw.rectangle([(0, 0), (1120, 40)], fill=(0, 0, 0, OPACITY))
+    
+    # Paste the rectangle onto the image with transparency
+    im.paste(rectangle, (shape[0][0], shape[0][1]), rectangle)
+
+    text(im, "By EpicEfeathers", (255,255,255), (1930, 1060), 35, anchor="rm")

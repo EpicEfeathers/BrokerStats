@@ -13,7 +13,7 @@ FONT_PATH = functions.FONT_PATH
 
 # cards
 SIZE = (500, 250)
-TOP_Y_POSITION = 335
+TOP_Y_POSITION = 295
 SPACING = int((1120 - (2*SIZE[0]))/3)
 LEFT = SPACING + SIZE[1]
 RIGHT = (1120 - SIZE[1]) - SPACING
@@ -24,7 +24,7 @@ def logo(im):
 
     logo = logo.resize((150,134), Image.LANCZOS).convert("RGBA")
 
-    im.paste(logo, (73,38), logo)
+    im.paste(logo, (73,18), logo)
 
 
 def profile_pic(im):
@@ -101,47 +101,43 @@ def create_backgrounds(im):
     functions.create_rounded_rectangle(image=im, size=SIZE, corner_radius=10, color=(0,0,0,OPACITY), position=(LEFT,TOP_Y_POSITION + 2*(SPACING + SIZE[1])))
     functions.create_rounded_rectangle(image=im, size=SIZE, corner_radius=10, color=(0,0,0,OPACITY), position=(RIGHT,TOP_Y_POSITION + 2*(SPACING + SIZE[1])))
 
-def kill_card(im, kills:str, percentile:str):
-    LEFT_POSITION = LEFT - (SIZE[0]/2) + 30
-    functions.text_narrow(im, text=f"Kills:", color=(255,255,255), position=(LEFT_POSITION, TOP_Y_POSITION - 60), font_size=55, anchor="lm")
-    functions.text_bold(im, text=kills, color=(255,255,255), position=(LEFT_POSITION, TOP_Y_POSITION), font_size=55, anchor="lm")
-    functions.text_narrow(im, text=f"Top {percentile}%", color=(255,255,255), position=(LEFT_POSITION, TOP_Y_POSITION + 60), font_size=40, anchor="lm")
+def create_card(im, info:str, percentile:str, category:str, column:int, row:int):
+    if column == 0:
+        x_pos = LEFT - (SIZE[0]/2) + 30
+    else:
+        x_pos = RIGHT - (SIZE[0]/2) + 30
 
-def deaths_card(im, kills:str, percentile:str):
-    RIGHT_POSITION = RIGHT - (SIZE[0]/2) + 30
-    functions.text_narrow(im, text=f"Deaths:", color=(255,255,255), position=(RIGHT_POSITION, TOP_Y_POSITION - 60), font_size=55, anchor="lm")
-    functions.text_bold(im, text=kills, color=(255,255,255), position=(RIGHT_POSITION, TOP_Y_POSITION), font_size=55, anchor="lm")
-    functions.text_narrow(im, text=f"Top {percentile}%", color=(255,255,255), position=(RIGHT_POSITION, TOP_Y_POSITION + 60), font_size=40, anchor="lm")
+    y_pos = (TOP_Y_POSITION + row*(SPACING + SIZE[1]))
+
+    functions.text_narrow(im, text=f"{category}:", color=(255,255,255), position=(x_pos, y_pos - 60), font_size=55, anchor="lm")
+    functions.text_bold(im, text=info, color=(255,255,255), position=(x_pos, y_pos), font_size=55, anchor="lm")
+    functions.text_narrow(im, text=f"Top {percentile}%", color=(255,255,255), position=(x_pos, y_pos + 60), font_size=40, anchor="lm")
+
+
+def kill_card(im, kills:str, percentile:str):
+    create_card(im, kills, percentile, "Kills", 0, 0)
+
+def deaths_card(im, deaths:str, percentile:str):
+    create_card(im, deaths, percentile, "Deaths", 1, 0)
 
 def classic_wins(im, wins:str, percentile:str):
-    LEFT_POSITION = LEFT - (SIZE[0]/2) + 30
-    functions.text_narrow(im, text=f"Classic Wins:", color=(255,255,255), position=(LEFT_POSITION, (TOP_Y_POSITION + SPACING + SIZE[1]) - 60), font_size=55, anchor="lm")
-    functions.text_bold(im, text=wins, color=(255,255,255), position=(LEFT_POSITION, (TOP_Y_POSITION + SPACING + SIZE[1])), font_size=55, anchor="lm")
-    functions.text_narrow(im, text=f"Top {percentile}%", color=(255,255,255), position=(LEFT_POSITION, (TOP_Y_POSITION + SPACING + SIZE[1]) + 60), font_size=40, anchor="lm")
+    create_card(im, wins, percentile, "Classic Wins", 0, 1)
 
 def br_wins(im, wins:str, percentile:str):
-    RIGHT_POSITION = RIGHT - (SIZE[0]/2) + 30
-    functions.text_narrow(im, text=f"BR Wins:", color=(255,255,255), position=(RIGHT_POSITION, (TOP_Y_POSITION + SPACING + SIZE[1]) - 60), font_size=55, anchor="lm")
-    functions.text_bold(im, text=wins, color=(255,255,255), position=(RIGHT_POSITION, (TOP_Y_POSITION + SPACING + SIZE[1])), font_size=55, anchor="lm")
-    functions.text_narrow(im, text=f"Top {percentile}%", color=(255,255,255), position=(RIGHT_POSITION, (TOP_Y_POSITION + SPACING + SIZE[1]) + 60), font_size=40, anchor="lm")
+    create_card(im, wins, percentile, "BR Wins", 1, 1)
 
 def killsELO(im, elo:str, percentile:str):
-    LEFT_POSITION = LEFT - (SIZE[0]/2) + 30
-    functions.text_narrow(im, text=f"Kills ELO:", color=(255,255,255), position=(LEFT_POSITION, (TOP_Y_POSITION + 2*(SPACING + SIZE[1])) - 60), font_size=55, anchor="lm")
-    functions.text_bold(im, text=elo, color=(255,255,255), position=(LEFT_POSITION, (TOP_Y_POSITION + 2*(SPACING + SIZE[1]))), font_size=55, anchor="lm")
-    functions.text_narrow(im, text=f"Top {percentile}%", color=(255,255,255), position=(LEFT_POSITION, (TOP_Y_POSITION + 2*(SPACING + SIZE[1])) + 60), font_size=40, anchor="lm")
+    create_card(im, elo, percentile, "Kills ELO", 0, 2)
 
 def gamesELO(im, elo:str, percentile:str):
-    RIGHT_POSITION = RIGHT - (SIZE[0]/2) + 30
-    functions.text_narrow(im, text=f"Games ELO:", color=(255,255,255), position=(RIGHT_POSITION, (TOP_Y_POSITION + 2*(SPACING + SIZE[1])) - 60), font_size=55, anchor="lm")
-    functions.text_bold(im, text=elo, color=(255,255,255), position=(RIGHT_POSITION, (TOP_Y_POSITION + 2*(SPACING + SIZE[1]))), font_size=55, anchor="lm")
-    functions.text_narrow(im, text=f"Top {percentile}%", color=(255,255,255), position=(RIGHT_POSITION, (TOP_Y_POSITION + 2*(SPACING + SIZE[1])) + 60), font_size=40, anchor="lm")
+    create_card(im, elo, percentile, "Games ELO", 1, 2)
 
 def create_stat_card():
     im = functions.get_random_background()
 
     logo(im)
     functions.create_right_background(im)
+    functions.bottom_bar(im)
     profile_pic(im)
     user_name(im, "EpicEfeathers", "35")
 
