@@ -13,7 +13,7 @@ FONT_PATH = functions.FONT_PATH
 
 # cards
 SIZE = (500, 250)
-TOP_Y_POSITION = 295
+TOP_Y_POSITION = 335 #295
 SPACING = int((1120 - (2*SIZE[0]))/3)
 LEFT = SPACING + SIZE[1]
 RIGHT = (1120 - SIZE[1]) - SPACING
@@ -24,7 +24,7 @@ def logo(im):
 
     logo = logo.resize((150,134), Image.LANCZOS).convert("RGBA")
 
-    im.paste(logo, (73,18), logo)
+    im.paste(logo, (73,36), logo)
 
 
 def profile_pic(im):
@@ -52,23 +52,19 @@ def user_name(im, username:str, time_played:str):
     functions.text_narrow(im, text=f"{time_played} hours", color=(255,255,255), position=(1520,Y_POSITION + 50), font_size=50, anchor="mm")
 
 
-def damage_dealt(im, damage:str, percentile:str):
-    Y_POSITION = RIGHT_Y_POSITION + 430
-    # description
-    functions.text_narrow(im, text="Damage Dealt:", color=(255,255,255), position=(LEFT_TEXT,Y_POSITION), font_size=50, anchor="lm")
-    # damage dealt
-    functions.text_bold(im, text=damage, color=(255,255,255), position=(LEFT_TEXT,Y_POSITION + 60), font_size=55, anchor="lm")
-    # percentile
-    functions.text_narrow(im, text=f"Top {percentile}%", color=(255,255,255), position=(RIGHT_TEXT,Y_POSITION), font_size=40, anchor="rm")
-
 def kdr(im, kdr:str, percentile:str):
-    Y_POSITION = RIGHT_Y_POSITION + 560
+    Y_POSITION = RIGHT_Y_POSITION + 430
     # description
     functions.text_narrow(im, text="Kills / Death:", color=(255,255,255), position=(LEFT_TEXT,Y_POSITION), font_size=50, anchor="lm")
     # kdr
     functions.text_bold(im, text=kdr, color=(255,255,255), position=(LEFT_TEXT,Y_POSITION + 60), font_size=55, anchor="lm")
     # percentile
     functions.text_narrow(im, text=f"Top {percentile}%", color=(255,255,255), position=(RIGHT_TEXT,Y_POSITION), font_size=40, anchor="rm")
+
+    # kd calculations
+    functions.text_narrow(im, text=f"5 kills to advance", color=(255,255,255), position=(LEFT_TEXT,Y_POSITION + 120), font_size=50, anchor="lm")
+    functions.text_narrow(im, text=f"25 kills to avoid", color=(255,255,255), position=(LEFT_TEXT,Y_POSITION + 170), font_size=50, anchor="lm")
+
 
 def kpm(im, kpm:str, percentile:str):
     Y_POSITION = RIGHT_Y_POSITION + 690
@@ -141,7 +137,6 @@ def create_stat_card():
     profile_pic(im)
     user_name(im, "EpicEfeathers", "35")
 
-    damage_dealt(im, "140,032", "58")
     kdr(im, "1.40", "40")
     kpm(im, "1.8", "39")
     level(im, level="23", percentage="48.5", xp="6,123", percentile="46")

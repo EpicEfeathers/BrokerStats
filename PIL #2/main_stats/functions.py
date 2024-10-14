@@ -73,7 +73,7 @@ def create_rounded_rectangle(image, size, corner_radius, color, position, scale_
     image.paste(rounded_rectangle, position, rounded_rectangle)
 
 def bottom_bar(im):
-    shape = [(0, 1040), (1120, 1080)]
+    '''shape = [(0, 1040), (1120, 1080)]
     size = shape[1][0] - shape[0][0], shape[1][1] - shape[0][1]
     
     # Create rectangle in 'RGBA' mode for transparency support
@@ -84,6 +84,6 @@ def bottom_bar(im):
     draw.rectangle([(0, 0), (1120, 40)], fill=(0, 0, 0, OPACITY))
     
     # Paste the rectangle onto the image with transparency
-    im.paste(rectangle, (shape[0][0], shape[0][1]), rectangle)
+    im.paste(rectangle, (shape[0][0], shape[0][1]), rectangle)'''
 
-    text(im, "By EpicEfeathers", (255,255,255), (1930, 1060), 35, anchor="rm")
+    text(im, "By EpicEfeathers", (255,255,255), (1900, 1060), 35, anchor="rm")
