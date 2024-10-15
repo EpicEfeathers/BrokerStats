@@ -60,7 +60,7 @@ def user_name(im, squad:str, username:str, time_played:str, steam:bool):
     if squad == "":
         functions.text_bold(im, text=username, color=color, position=(1520,Y_POSITION), font_size=50, anchor="mm")
     else:
-        functions.draw_colored_text(im=im, text1=squad, text2=f" {user_name}", color1=(156,156,248), color2=color, position=(1520, Y_POSITION), font_size=50, index=10, anchor="mm")
+        functions.draw_colored_text(im=im, text1=squad, text2=f" {username}", color1=(156,156,248), color2=color, position=(1520, Y_POSITION), font_size=50, index=10, anchor="mm")
     # time played
     functions.text_narrow(im, text=f"{time_played}", color=(255,255,255), position=(1520,Y_POSITION + 50), font_size=50, anchor="mm")
 
