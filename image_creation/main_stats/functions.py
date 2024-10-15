@@ -18,6 +18,29 @@ def draw_text(im, text, color, position, font_size, index, anchor):
     font = ImageFont.truetype(FONT_PATH, font_size, index=index)
     draw.text(position, str(text), font=font, fill=color,anchor=anchor)
 
+def draw_colored_text(im, text1, text2, color1, color2, position, font_size, index, anchor):
+    draw = ImageDraw.Draw(im)
+    font = ImageFont.truetype(FONT_PATH, font_size, index=index)
+    
+    # Calculate the total width of the combined text (text1 + text2)
+    bbox_text1 = draw.textbbox((0, 0), text1, font=font)
+    bbox_text2 = draw.textbbox((0, 0), text2, font=font)
+    
+    total_width = (bbox_text1[2] - bbox_text1[0]) + (bbox_text2[2] - bbox_text2[0])
+    total_height = max(bbox_text1[3] - bbox_text1[1], bbox_text2[3] - bbox_text2[1])
+
+    # Adjust position if anchor is "mm" (middle-middle)
+    if anchor == "mm":
+        # Center the text on the given position
+        centered_position = (position[0] - total_width // 2, position[1] - total_height // 2)
+    else:
+        centered_position = position
+
+    draw.text(centered_position, text1, font=font, fill=color1, anchor="lt")
+    
+    new_position = (centered_position[0] + (bbox_text1[2] - bbox_text1[0]), centered_position[1])
+    draw.text(new_position, text2, font=font, fill=color2, anchor="lt")
+
 def text_bold(im, text, color, position, font_size, anchor):
     draw_text(im, text, color, position, font_size, 10, anchor=anchor)
 

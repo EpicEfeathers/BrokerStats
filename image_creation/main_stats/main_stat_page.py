@@ -50,10 +50,17 @@ def profile_pic(im):
 
     im.paste(circular_img, (1392,RIGHT_Y_POSITION), circular_img)
 
-def user_name(im, username:str, time_played:str):
+def user_name(im, squad:str, username:str, time_played:str, steam:bool):
     Y_POSITION = RIGHT_Y_POSITION + 300
     # username
-    functions.text_bold(im, text=username, color=(255,255,255), position=(1520,Y_POSITION), font_size=50, anchor="mm")
+    if steam:
+        color = (245,179,62)
+    else:
+        color=(255,255,255)
+    if squad == "":
+        functions.text_bold(im, text=username, color=color, position=(1520,Y_POSITION), font_size=50, anchor="mm")
+    else:
+        functions.draw_colored_text(im=im, text1=squad, text2=f" {user_name}", color1=(156,156,248), color2=color, position=(1520, Y_POSITION), font_size=50, index=10, anchor="mm")
     # time played
     functions.text_narrow(im, text=f"{time_played}", color=(255,255,255), position=(1520,Y_POSITION + 50), font_size=50, anchor="mm")
 
@@ -139,11 +146,12 @@ def gamesELO(im, elo:str, percentile:str):
 def create_stat_card(stats: dict):
     im = functions.get_random_background()
 
+
     logo(im)
     functions.create_right_background(im)
     functions.bottom_bar(im)
     profile_pic(im)
-    user_name(im, "EpicEfeathers", functions.time_since_last_seen(stats['time']))
+    user_name(im, stats['squad'], "EpicEfeathers", functions.time_since_last_seen(stats['time']), stats['steam'])
 
     kills_needed, deaths_to_avoid = functions.calculate_kdr_changes(int(stats['kills'].replace(",","")), int(stats['deaths'].replace(",","")))
     kdr(im, stats['kills / death'], "??", kills_needed, deaths_to_avoid)
