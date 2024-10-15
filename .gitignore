@@ -1,3 +1,6 @@
 
 .DS_Store
 /user_commands/__pycache__
+/tests
+*.pyc
+/image_creation/main_stats/__pycache__

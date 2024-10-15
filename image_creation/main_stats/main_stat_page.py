@@ -5,6 +5,12 @@ from fontTools.ttLib import TTCollection
 
 from image_creation.main_stats import functions
 
+import sys, os
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.abspath(os.path.join(current_dir, '..'))
+sys.path.append(parent_dir)
+from get_stats import user
+
 OPACITY = functions.OPACITY
 LEFT_TEXT = functions.LEFT_TEXT
 RIGHT_TEXT = functions.RIGHT_TEXT
@@ -49,10 +55,10 @@ def user_name(im, username:str, time_played:str):
     # username
     functions.text_bold(im, text=username, color=(255,255,255), position=(1520,Y_POSITION), font_size=50, anchor="mm")
     # time played
-    functions.text_narrow(im, text=f"{time_played} hours", color=(255,255,255), position=(1520,Y_POSITION + 50), font_size=50, anchor="mm")
+    functions.text_narrow(im, text=f"{time_played}", color=(255,255,255), position=(1520,Y_POSITION + 50), font_size=50, anchor="mm")
 
 
-def kdr(im, kdr:str, percentile:str):
+def kdr(im, kdr:str, percentile:str, kills_needed:str, deaths_to_avoid:str):
     Y_POSITION = RIGHT_Y_POSITION + 430
     # description
     functions.text_narrow(im, text="Kills / Death:", color=(255,255,255), position=(LEFT_TEXT,Y_POSITION), font_size=50, anchor="lm")
@@ -62,8 +68,8 @@ def kdr(im, kdr:str, percentile:str):
     functions.text_narrow(im, text=f"Top {percentile}%", color=(255,255,255), position=(RIGHT_TEXT,Y_POSITION), font_size=40, anchor="rm")
 
     # kd calculations
-    functions.text_narrow(im, text=f"5 kills to advance", color=(255,255,255), position=(LEFT_TEXT,Y_POSITION + 120), font_size=50, anchor="lm")
-    functions.text_narrow(im, text=f"25 kills to avoid", color=(255,255,255), position=(LEFT_TEXT,Y_POSITION + 170), font_size=50, anchor="lm")
+    functions.text_narrow(im, text=f"{kills_needed} kills to advance", color=(255,255,255), position=(LEFT_TEXT,Y_POSITION + 120), font_size=50, anchor="lm")
+    functions.text_narrow(im, text=f"{deaths_to_avoid} kills to avoid", color=(255,255,255), position=(LEFT_TEXT,Y_POSITION + 170), font_size=50, anchor="lm")
 
 
 def kpm(im, kpm:str, percentile:str):
@@ -80,7 +86,7 @@ def level(im, level:str, percentage:str, xp:str, percentile:str):
     # level
     functions.text_bold(im, text=f"Level {level}", color=(255,255,255), position=(LEFT_TEXT,Y_POSITION), font_size=55, anchor="lm")
     # percent to next level
-    functions.text_narrow(im, text=f"{percentage}% to next level", color=(255,255,255), position=(LEFT_TEXT,Y_POSITION + 50), font_size=50, anchor="lm")
+    functions.text_narrow(im, text=f"{percentage} to next level", color=(255,255,255), position=(LEFT_TEXT,Y_POSITION + 50), font_size=50, anchor="lm")
     # XP
     functions.text_narrow(im, text=f"XP: {xp}", color=(255,255,255), position=(LEFT_TEXT,Y_POSITION + 100), font_size=50, anchor="lm")
     # percentile
@@ -128,27 +134,30 @@ def killsELO(im, elo:str, percentile:str):
 def gamesELO(im, elo:str, percentile:str):
     create_card(im, elo, percentile, "Games ELO", 1, 2)
 
-def create_stat_card():
+
+
+def create_stat_card(stats: dict):
     im = functions.get_random_background()
 
     logo(im)
     functions.create_right_background(im)
     functions.bottom_bar(im)
     profile_pic(im)
-    user_name(im, "EpicEfeathers", "35")
+    user_name(im, "EpicEfeathers", functions.time_since_last_seen(stats['time']))
 
-    kdr(im, "1.40", "40")
-    kpm(im, "1.8", "39")
-    level(im, level="23", percentage="48.5", xp="6,123", percentile="46")
+    kills_needed, deaths_to_avoid = functions.calculate_kdr_changes(int(stats['kills'].replace(",","")), int(stats['deaths'].replace(",","")))
+    kdr(im, stats['kills / death'], "??", kills_needed, deaths_to_avoid)
+    kpm(im, stats['kills / min'], "??")
+    level(im, stats['level'], percentage=stats['progressPercentage'], xp="6,123", percentile=stats["xpPercentile"])
 
     create_backgrounds(im)
-    kill_card(im, "2,450", "15.5")
-    deaths_card(im, "2,450", "15.5")
-    classic_wins(im, "105", "85")
-    br_wins(im, "2", "90")
-    killsELO(im, "1650", "31")
-    gamesELO(im, "2014", "10")
+    kill_card(im, stats['kills'], "??")
+    deaths_card(im, stats['deaths'], "??")
+    classic_wins(im, "105", "??")
+    br_wins(im, stats['battle royale wins'], "??")
+    killsELO(im, stats['killsELO'], stats["killsEloPercentile"])
+    gamesELO(im, stats["gamesELO"], stats["gamesEloPercentile"])
 
     return im
 
-create_stat_card()
+#create_stat_card()

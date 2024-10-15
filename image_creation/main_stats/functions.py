@@ -3,6 +3,9 @@ import os
 import random
 from io import BytesIO
 import discord
+import math
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
 
 OPACITY = 200
 LEFT_TEXT = 1160
@@ -87,8 +90,36 @@ def bottom_bar(im):
     # Paste the rectangle onto the image with transparency
     im.paste(rectangle, (shape[0][0], shape[0][1]), rectangle)'''
 
-    text(im, "By EpicEfeathers", (255,255,255), (1900, 1060), 35, anchor="rm")
+    #text(im, "By EpicEfeathers", (255,255,255), (1900, 1060), 35, anchor="rm")
+    pass
 
+def calculate_kdr_changes(kills, deaths):
+    kdr = kills/deaths
+    rounded = round(kdr, 1)
+
+    kills_needed = math.ceil(((rounded + 0.05) * deaths) - kills)
+
+    deaths_avoid = math.floor((kills / (rounded - 0.05))) - deaths + 1
+
+    return kills_needed, deaths_avoid
+
+def time_since_last_seen(timestamp: int):
+    now = datetime.now()
+    last_played = datetime.fromtimestamp(timestamp)
+    delta = relativedelta(now, last_played)
+
+    if delta.years > 0:
+        return f"Last seen {delta.years} year{'s' if delta.years > 1 else ''} ago"
+    elif delta.months > 0:
+        return f"Last seen {delta.months} month{'s' if delta.months > 1 else ''} ago"
+    elif delta.days > 0:
+        return f"Last seen {delta.days} day{'s' if delta.days > 1 else ''} ago"
+    elif delta.hours > 0:
+        return f"Last seen {delta.hours} hour{'s' if delta.hours > 1 else ''} ago"
+    elif delta.minutes > 0:
+        return f"Last seen {delta.minutes} minute{'s' if delta.minutes > 1 else ''} ago"
+    else:
+        return "Online now"
 
 
 def convert_to_discord(im):
