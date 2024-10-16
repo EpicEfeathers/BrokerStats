@@ -33,20 +33,21 @@ def logo(im):
     im.paste(logo, (73,36), logo)
 
 
-def profile_pic(im):
-    profile_pic = Image.open("image_creation/profile_pic.png")
+def profile_pic(im, profile_picture, wb_logo:bool):
+    if wb_logo:
+        profile_picture = functions.resize_logo(profile_picture)
+    else:
+        profile_picture = profile_picture.resize((256,256), Image.LANCZOS).convert("RGBA")
 
-    profile_pic = profile_pic.resize((256,256), Image.LANCZOS).convert("RGBA")
-
-    mask_size = (profile_pic.size[0]*4, profile_pic.size[1]*4)
+    mask_size = (profile_picture.size[0]*4, profile_picture.size[1]*4)
     mask = Image.new("L", mask_size, 0)
     draw = ImageDraw.Draw(mask)
     draw.ellipse((0, 0, mask_size[0], mask_size[1]), fill=255)
 
-    mask = mask.resize(profile_pic.size, Image.LANCZOS)
+    mask = mask.resize(profile_picture.size, Image.LANCZOS)
 
-    circular_img = Image.new("RGBA", profile_pic.size, (0, 0, 0, 0))
-    circular_img.paste(profile_pic, (0,0), mask)
+    circular_img = Image.new("RGBA", profile_picture.size, (0, 0, 0, 0))
+    circular_img.paste(profile_picture, (0,0), mask)
 
     im.paste(circular_img, (1392,RIGHT_Y_POSITION), circular_img)
 
@@ -143,29 +144,32 @@ def gamesELO(im, elo:str, percentile:str):
 
 
 
-def create_stat_card(stats: dict):
+def create_stat_card(stats: dict, profile_image):
     im = functions.get_random_background()
 
 
     logo(im)
     functions.create_right_background(im)
     functions.bottom_bar(im)
-    profile_pic(im)
-    user_name(im, stats['squad'], "EpicEfeathers", functions.time_since_last_seen(stats['time']), stats['steam'])
+    if profile_image:
+        profile_pic(im, Image.open("image_creation/profile_pic.png"), False)
+    else:
+        profile_pic(im, Image.open("image_creation/wb_logo.png"), True)
+
+    user_name(im, stats['squad'], stats["nick"], functions.time_since_last_seen(stats['time']), stats['steam'])
 
     kills_needed, deaths_to_avoid = functions.calculate_kdr_changes(int(stats['kills'].replace(",","")), int(stats['deaths'].replace(",","")))
     kdr(im, stats['kills / death'], "??", kills_needed, deaths_to_avoid)
     kpm(im, stats['kills / min'], "??")
-    level(im, stats['level'], percentage=stats['progressPercentage'], xp="6,123", percentile=stats["xpPercentile"])
+    level(im, stats['level'], percentage=stats['progressPercentage'], xp=functions.format_large_number(stats['xp']), percentile=stats["xpPercentile"])
 
     create_backgrounds(im)
     kill_card(im, stats['kills'], "??")
     deaths_card(im, stats['deaths'], "??")
-    classic_wins(im, "105", "??")
+    classic_wins(im, stats['classic mode wins'], "??")
     br_wins(im, stats['battle royale wins'], "??")
     killsELO(im, stats['killsELO'], stats["killsEloPercentile"])
     gamesELO(im, stats["gamesELO"], stats["gamesEloPercentile"])
 
-    return im
 
-#create_stat_card()
+    return im

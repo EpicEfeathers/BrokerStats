@@ -151,3 +151,20 @@ def convert_to_discord(im):
         image_binary.seek(0)
         
         return discord.File(fp=image_binary, filename='image.png')
+    
+def resize_logo(im):
+    profile_pic = im.resize((225,225), Image.LANCZOS).convert("RGBA")
+
+    new_size = (256, 256)
+    background = Image.new('RGBA', new_size, (0, 0, 0, 0))
+
+    #centers old image on new image
+    x = (new_size[0] - profile_pic.size[0]) // 2
+    y = (new_size[1] - profile_pic.size[1]) // 2
+
+    background.paste(profile_pic, (x, y))
+
+    return background
+
+def format_large_number(number):
+    return f"{number:,}"

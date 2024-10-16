@@ -2,7 +2,8 @@
 import discord
 from discord import app_commands
 from discord.ext import commands
-from io import BytesIO
+from typing import Optional
+import traceback
 
 import logging
 
@@ -45,31 +46,28 @@ async def on_ready():
 # Test command
 @client.tree.command()
 async def test(interaction: discord.Interaction):
-    await interaction.response.send_message(f"<a:loading1:1295503606077980712> bot is thinking...")
-    #await interaction.response.send_message(f"{interaction.user.mention}, bot is up and running!", ephemeral=True)
+    await interaction.response.send_message(f"{interaction.user.mention}, bot is up and running!", ephemeral=True)
 
-@client.tree.command()
-async def stats(interaction: discord.Interaction):
-    '''await interaction.response.defer(ephemeral=True)
-    await interaction.followup.send("<a:loading1:1295503606077980712>  Grabbing information...", ephemeral=True)
-    uid = "609aa68ed142afe952202c5c"
-    stats = await fetch_all(uid)
+@client.tree.command(name="stats", description="Gets a user's stats")
+@app_commands.describe(uid='User\'s UID')
+async def stats(interaction: discord.Interaction, uid: Optional[str]):
+    if uid:
+        if len(uid) != 24 or not uid.isalnum():
+            await interaction.response.send_message(f"You must enter a valid uid.\n{uid} is not a valid WarBrokers uid.")
+            return
+        try:
+            await interaction.response.send_message(content="<a:loading1:1295503606077980712>  Grabbing information...")
+            #uid = "609aa68ed142afe952202c5c"
+            stats = await fetch_all(uid)
 
-    await interaction.followup.send("<a:loading1:1295503606077980712>  Creating stat card...", ephemeral=True)
-    im = convert_to_discord(create_stat_card(stats))
-    
-    await interaction.followup.send(file=im)'''
-    try:
-        await interaction.response.send_message(content="<a:loading1:1295503606077980712>  Grabbing information...")
-        uid = "609aa68ed142afe952202c5c"
-        stats = await fetch_all(uid)
+            await interaction.edit_original_response(content="<a:loading1:1295503606077980712>  Creating stat card...")
+            im = convert_to_discord(create_stat_card(stats=stats, profile_image=None))
 
-        await interaction.edit_original_response(content="<a:loading1:1295503606077980712>  Creating stat card...")
-        im = convert_to_discord(create_stat_card(stats))
-
-        await interaction.edit_original_response(content="", attachments=[im])
-    except Exception as e:
-        print(e)
+            await interaction.edit_original_response(content="", attachments=[im])
+        except Exception as e:
+            print(traceback.format_exc())
+            print(e)
+            await interaction.edit_original_response(content=f"You must enter a valid uid.\n{uid} is not a valid WarBrokers uid.")
 
 
 # error handling
