@@ -3,13 +3,9 @@ import os
 import random
 from fontTools.ttLib import TTCollection
 
-from image_creation.main_stats import functions
+import functions
 
-import sys, os
-current_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.abspath(os.path.join(current_dir, '..'))
-sys.path.append(parent_dir)
-from get_stats import user
+from ..get_stats import user
 
 OPACITY = functions.OPACITY
 LEFT_TEXT = functions.LEFT_TEXT
@@ -156,7 +152,11 @@ def create_stat_card(stats: dict, profile_image):
     else:
         profile_pic(im, Image.open("image_creation/wb_logo.png"), True)
 
-    user_name(im, stats['squad'], stats["nick"], functions.time_since_last_seen(stats['time']), stats['steam'])
+    try:
+        steam = stats['steam']
+    except:
+        steam = False
+    user_name(im, stats['squad'], stats["nick"], functions.time_since_last_seen(stats['time']), steam)
 
     kills_needed, deaths_to_avoid = functions.calculate_kdr_changes(int(stats['kills'].replace(",","")), int(stats['deaths'].replace(",","")))
     kdr(im, stats['kills / death'], "??", kills_needed, deaths_to_avoid)

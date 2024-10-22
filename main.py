@@ -4,13 +4,16 @@ from discord import app_commands
 from discord.ext import commands
 from typing import Optional
 import traceback
+import aiohttp
 
 import logging
 
 from image_creation.main_stats.main_stat_page import create_stat_card
-from image_creation.main_stats.functions import convert_to_discord
-from image_creation.get_stats.user import fetch_all
+from functions import convert_to_discord 
+from image_creation.get_stats.user import fetch_all, get_autocomplete, username_autocomplete
+from image_creation.database_stuff.functions import fetch_uid, link_user
 
+import commands
 #handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
 
 activity = discord.Activity(name = "my activity", type = discord.ActivityType.custom, state = "Shooting bots")
@@ -48,26 +51,24 @@ async def on_ready():
 async def test(interaction: discord.Interaction):
     await interaction.response.send_message(f"{interaction.user.mention}, bot is up and running!", ephemeral=True)
 
-@client.tree.command(name="stats", description="Gets a user's stats")
-@app_commands.describe(uid='User\'s UID')
-async def stats(interaction: discord.Interaction, uid: Optional[str]):
-    if uid:
-        if len(uid) != 24 or not uid.isalnum():
-            await interaction.response.send_message(f"You must enter a valid uid.\n{uid} is not a valid WarBrokers uid.")
-            return
+commands.stats(client)
+
+@client.tree.command(name="linkstats", description="Link your stats to your discord account.")
+@app_commands.describe(uid='Paste your uid or stats page link here.')
+async def linkstats(interaction: discord.Interaction, uid: str):
+    user_id = interaction.user.id
+    try:
+        print(user_id)
+        fetch_uid(user_id)
+        await interaction.response.send_message("Your accounts are already linked. Use </stats:1295437878654144515> to try it out now!")
+    except:
         try:
-            await interaction.response.send_message(content="<a:loading1:1295503606077980712>  Grabbing information...")
-            #uid = "609aa68ed142afe952202c5c"
-            stats = await fetch_all(uid)
-
-            await interaction.edit_original_response(content="<a:loading1:1295503606077980712>  Creating stat card...")
-            im = convert_to_discord(create_stat_card(stats=stats, profile_image=None))
-
-            await interaction.edit_original_response(content="", attachments=[im])
+            link_user(user_id, uid)
+            await interaction.response.send_message("Your accounts have been linked! Use </stats:1295437878654144515> to try it out now!")
         except Exception as e:
-            print(traceback.format_exc())
             print(e)
-            await interaction.edit_original_response(content=f"You must enter a valid uid.\n{uid} is not a valid WarBrokers uid.")
+            await interaction.response.send_message(f"\"{uid}\" is not a valid WarBrokers uid!")
+
 
 
 # error handling
