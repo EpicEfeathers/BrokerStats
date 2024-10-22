@@ -52,7 +52,7 @@ def text_narrow(im, text, color, position, font_size, anchor):
 
 def get_random_background():
     folder_path = "image_creation/backgrounds"
-    png_files = [file for file in os.listdir(folder_path)]
+    png_files = [file for file in os.listdir(folder_path) if file.endswith('.png')]
 
     image = random.choice(png_files)
 

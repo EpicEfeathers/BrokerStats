@@ -2,9 +2,10 @@ import discord
 from discord import app_commands
 from typing import Optional, List
 import traceback
+from urllib.parse import urlparse
 
 import functions
-from image_creation.database_stuff.functions import fetch_uid
+from image_creation.database_stuff.functions import fetch_uid, link_user, reset_uid
 from image_creation.get_stats import user
 from image_creation.main_stats import main_stat_page
 
@@ -40,4 +41,48 @@ def stats(client):
 
     @stats.autocomplete('username')
     async def stats_autocomplete(interaction: discord.Interaction, current: str) -> List[app_commands.Choice[str]]:
+        return await user.username_autocomplete(current)
+    
+def linkstats(client):
+    @client.tree.command(name="linkstats", description="Link your stats to your discord account.")
+    @app_commands.describe(link='Your stat\'s page link', uid='Your UID', username="In game nickname")
+    async def linkstats(interaction: discord.Interaction, link: Optional[str], uid: Optional[str], username: Optional[str]):
+        user_id = interaction.user.id
+
+
+        #reset_uid(user_id)
+
+        if username:
+            uid = username
+
+        if link:
+            if link.startswith("https://stats.warbrokers.io/players/i/"):
+                parsed_url = urlparse(link)
+                uid = parsed_url.path.split('/')[-1]
+            else:
+                await interaction.response.send_message(f"`{link}` is not a valid WarBrokers link!", ephemeral=True)
+                return
+
+        if uid:
+            try:
+                fetch_uid(user_id)
+                await interaction.response.send_message("Your accounts are already linked. Use </stats:1295437878654144515> to try it out now!", ephemeral=True)
+            except:
+                try:
+                    link_user(user_id, uid)
+                    await interaction.response.send_message("Success! Your accounts have been linked! Use </stats:1295437878654144515> to try it out now!")
+                except Exception as e:
+                    print(e)
+                    if link:
+                        await interaction.response.send_message(f"`{link}` does not contain a valid WarBrokers uid!", ephemeral=True)
+                    elif username:
+                        await interaction.response.send_message(f"`{username}` is not a valid WarBrokers player name.\nPlease wait for the options to show up and click on of those.", ephemeral=True)
+                    else:
+                        await interaction.response.send_message(f"`{uid}` is not a valid WarBrokers uid!", ephemeral=True)
+        else:
+            await interaction.response.send_message(f":exclamation: You must input either a UID or a username to link your stats.", ephemeral=True)
+
+
+    @linkstats.autocomplete('username')
+    async def linkstats_autocomplete(interaction: discord.Interaction, current: str) -> List[app_commands.Choice[str]]:
         return await user.username_autocomplete(current)

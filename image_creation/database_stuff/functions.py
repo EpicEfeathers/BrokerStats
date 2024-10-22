@@ -49,3 +49,13 @@ def fetch_uid(user_id):
         return row[0]
     else:
         raise UserNotFoundError(f"Discord user_id \"{user_id}\" not found in the database.")
+    
+
+def reset_uid(user_id):
+    conn = sqlite3.connect('image_creation/database_stuff/users.db')
+    c = conn.cursor()
+
+    c.execute("DELETE FROM users WHERE user_id = ?", (user_id,))
+
+    conn.commit()
+    conn.close()

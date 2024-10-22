@@ -52,24 +52,7 @@ async def test(interaction: discord.Interaction):
     await interaction.response.send_message(f"{interaction.user.mention}, bot is up and running!", ephemeral=True)
 
 commands.stats(client)
-
-@client.tree.command(name="linkstats", description="Link your stats to your discord account.")
-@app_commands.describe(uid='Paste your uid or stats page link here.')
-async def linkstats(interaction: discord.Interaction, uid: str):
-    user_id = interaction.user.id
-    try:
-        print(user_id)
-        fetch_uid(user_id)
-        await interaction.response.send_message("Your accounts are already linked. Use </stats:1295437878654144515> to try it out now!")
-    except:
-        try:
-            link_user(user_id, uid)
-            await interaction.response.send_message("Your accounts have been linked! Use </stats:1295437878654144515> to try it out now!")
-        except Exception as e:
-            print(e)
-            await interaction.response.send_message(f"\"{uid}\" is not a valid WarBrokers uid!")
-
-
+commands.linkstats(client)
 
 # error handling
 '''@client.tree.error
