@@ -9,6 +9,23 @@ from image_creation.database_stuff.functions import fetch_uid, link_user, reset_
 from image_creation.get_stats import user
 from image_creation.main_stats import main_stat_page
 
+class Stats(discord.ui.View):
+    def __init__(self, username:str, uid:str):
+        super().__init__()
+        self.username = username
+        self.uid = uid
+
+        wb_url = f"https://stats.warbrokers.io/players/i/{uid}"
+        pomp_url = f"https://stats.wbpjs.com/players/{uid}"
+
+        self.add_item(discord.ui.Button(label='Stats page', url=wb_url))
+        self.add_item(discord.ui.Button(label='POMPS\'s stats', url=pomp_url))
+        self.add_item(discord.ui.Button(label='Support server', url="https://discord.gg/8r52JxkJez"))
+
+    @discord.ui.button(label='Copy UID', style=discord.ButtonStyle.primary)
+    async def copy_uid(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_message(f'{self.username}\'s UID:```{self.uid}```', ephemeral=True)
+
 
 def stats(client):
     @client.tree.command(name="stats", description="Gets a user's stats")
@@ -33,7 +50,9 @@ def stats(client):
             await interaction.edit_original_response(content="<a:loading1:1295503606077980712>  Creating stat card...")
             im = functions.convert_to_discord(main_stat_page.create_stat_card(stats=stats, profile_image=None))
 
-            await interaction.edit_original_response(content="", attachments=[im])
+            view = Stats(stats["nick"], uid)
+            await interaction.edit_original_response(content="", attachments=[im], view=view)
+            await view.wait()
         except Exception as e:
             print(traceback.format_exc())
             print(e)
@@ -48,9 +67,6 @@ def linkstats(client):
     @app_commands.describe(link='Your stat\'s page link', uid='Your UID', username="In game nickname")
     async def linkstats(interaction: discord.Interaction, link: Optional[str], uid: Optional[str], username: Optional[str]):
         user_id = interaction.user.id
-
-
-        #reset_uid(user_id)
 
         if username:
             uid = username
@@ -72,7 +88,6 @@ def linkstats(client):
                     link_user(user_id, uid)
                     await interaction.response.send_message("Success! Your accounts have been linked! Use </stats:1295437878654144515> to try it out now!")
                 except Exception as e:
-                    print(e)
                     if link:
                         await interaction.response.send_message(f"`{link}` does not contain a valid WarBrokers uid!", ephemeral=True)
                     elif username:
