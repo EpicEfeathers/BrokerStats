@@ -1,10 +1,5 @@
-from PIL import Image, ImageFilter, ImageDraw, ImageFont
-import os
-import random
-from fontTools.ttLib import TTCollection
-
+from PIL import Image, ImageDraw
 import functions
-
 from ..get_stats import user
 
 OPACITY = functions.OPACITY
@@ -19,21 +14,25 @@ TOP_Y_POSITION = 335 #295
 SPACING = int((1120 - (2*SIZE[0]))/3)
 LEFT = SPACING + SIZE[1]
 RIGHT = (1120 - SIZE[1]) - SPACING
+LOGO_SIZE = (150,134)
+PROFILE_PIC_SIZE = (256, 256)
 
 
 def logo(im):
     logo = Image.open("image_creation/wb_logo.png")
 
-    logo = logo.resize((150,134), Image.LANCZOS).convert("RGBA")
+    logo = logo.resize(LOGO_SIZE, Image.LANCZOS).convert("RGBA")
 
     im.paste(logo, (73,36), logo)
+
+    functions.text_bold(im=im, text="User Stats", color=(255, 255, 255), position=(250, 103), font_size=75, anchor="lm")
 
 
 def profile_pic(im, profile_picture, wb_logo:bool):
     if wb_logo:
         profile_picture = functions.resize_logo(profile_picture)
     else:
-        profile_picture = profile_picture.resize((256,256), Image.LANCZOS).convert("RGBA")
+        profile_picture = profile_picture.resize(PROFILE_PIC_SIZE, Image.LANCZOS).convert("RGBA")
 
     mask_size = (profile_picture.size[0]*4, profile_picture.size[1]*4)
     mask = Image.new("L", mask_size, 0)
@@ -54,14 +53,15 @@ def user_name(im, squad:str, username:str, time_played:str, steam:bool):
         color = (245,179,62)
     else:
         color=(255,255,255)
-    if squad == "":
+    functions.draw_colored_text(im=im, text1=squad, text2=f" {username}", color1=(156,156,248), color2=color, position=(1520, Y_POSITION), font_size=50, index=10, anchor="mm")
+    '''if squad == "":
         functions.text_bold(im, text=username, color=color, position=(1520,Y_POSITION), font_size=50, anchor="mm")
     else:
-        functions.draw_colored_text(im=im, text1=squad, text2=f" {username}", color1=(156,156,248), color2=color, position=(1520, Y_POSITION), font_size=50, index=10, anchor="mm")
+        functions.draw_colored_text(im=im, text1=squad, text2=f" {username}", color1=(156,156,248), color2=color, position=(1520, Y_POSITION), font_size=50, index=10, anchor="mm")'''
     # time played
     functions.text_narrow(im, text=f"{time_played}", color=(255,255,255), position=(1520,Y_POSITION + 50), font_size=50, anchor="mm")
 
-
+# all the kdr related text
 def kdr(im, kdr:str, percentile:str, kills_needed:str, deaths_to_avoid:str):
     Y_POSITION = RIGHT_Y_POSITION + 430
     # description
@@ -75,9 +75,9 @@ def kdr(im, kdr:str, percentile:str, kills_needed:str, deaths_to_avoid:str):
     functions.text_narrow(im, text=f"{kills_needed} kills to advance", color=(255,255,255), position=(LEFT_TEXT,Y_POSITION + 120), font_size=50, anchor="lm")
     functions.text_narrow(im, text=f"{deaths_to_avoid} kills to avoid", color=(255,255,255), position=(LEFT_TEXT,Y_POSITION + 170), font_size=50, anchor="lm")
 
-
+# all the kpm related text
 def kpm(im, kpm:str, percentile:str):
-    Y_POSITION = RIGHT_Y_POSITION + 690
+    Y_POSITION = RIGHT_Y_POSITION + 679
     # description
     functions.text_narrow(im, text="Kills / Min:", color=(255,255,255), position=(LEFT_TEXT,Y_POSITION), font_size=50, anchor="lm")
     # kpm
@@ -85,6 +85,7 @@ def kpm(im, kpm:str, percentile:str):
     # percentile
     functions.text_narrow(im, text=f"Top {percentile}%", color=(255,255,255), position=(RIGHT_TEXT,Y_POSITION), font_size=40, anchor="rm")
 
+# all the level related text
 def level(im, level:str, percentage:str, xp:str, percentile:str):
     Y_POSITION = RIGHT_Y_POSITION + 820
     # level
@@ -96,29 +97,24 @@ def level(im, level:str, percentage:str, xp:str, percentile:str):
     # percentile
     functions.text_narrow(im, text=f"Top {percentile}%", color=(255,255,255), position=(RIGHT_TEXT,Y_POSITION), font_size=40, anchor="rm")
 
+# creates the card backgrounds on the image
 def create_backgrounds(im):
-    # row 1
-    functions.create_rounded_rectangle(image=im, size=SIZE, corner_radius=10, color=(0,0,0,OPACITY), position=(LEFT,TOP_Y_POSITION))
-    functions.create_rounded_rectangle(image=im, size=SIZE, corner_radius=10, color=(0,0,0,OPACITY), position=(RIGHT,TOP_Y_POSITION))
-    # row 2
-    functions.create_rounded_rectangle(image=im, size=SIZE, corner_radius=10, color=(0,0,0,OPACITY), position=(LEFT,TOP_Y_POSITION + SPACING + SIZE[1]))
-    functions.create_rounded_rectangle(image=im, size=SIZE, corner_radius=10, color=(0,0,0,OPACITY), position=(RIGHT,TOP_Y_POSITION + SPACING + SIZE[1]))
-    # row 3
-    functions.create_rounded_rectangle(image=im, size=SIZE, corner_radius=10, color=(0,0,0,OPACITY), position=(LEFT,TOP_Y_POSITION + 2*(SPACING + SIZE[1])))
-    functions.create_rounded_rectangle(image=im, size=SIZE, corner_radius=10, color=(0,0,0,OPACITY), position=(RIGHT,TOP_Y_POSITION + 2*(SPACING + SIZE[1])))
+    for height in range(3):
+        functions.create_rounded_rectangle(image=im, size=SIZE, corner_radius=10, color=(0,0,0,OPACITY), position=(LEFT,TOP_Y_POSITION + height*(SPACING+SIZE[1])))
+        functions.create_rounded_rectangle(image=im, size=SIZE, corner_radius=10, color=(0,0,0,OPACITY), position=(RIGHT,TOP_Y_POSITION + height*(SPACING+SIZE[1])))
 
+# the base function to create a card text on the image
 def create_card(im, info:str, percentile:str, category:str, column:int, row:int):
     if column == 0:
         x_pos = LEFT - (SIZE[0]/2) + 30
     else:
         x_pos = RIGHT - (SIZE[0]/2) + 30
 
-    y_pos = (TOP_Y_POSITION + row*(SPACING + SIZE[1]))
+    y_pos = TOP_Y_POSITION + row*(SPACING + SIZE[1])
 
     functions.text_narrow(im, text=f"{category}:", color=(255,255,255), position=(x_pos, y_pos - 60), font_size=55, anchor="lm")
     functions.text_bold(im, text=info, color=(255,255,255), position=(x_pos, y_pos), font_size=55, anchor="lm")
     functions.text_narrow(im, text=f"Top {percentile}%", color=(255,255,255), position=(x_pos, y_pos + 60), font_size=40, anchor="lm")
-
 
 def kill_card(im, kills:str, percentile:str):
     create_card(im, kills, percentile, "Kills", 0, 0)
@@ -139,7 +135,6 @@ def gamesELO(im, elo:str, percentile:str):
     create_card(im, elo, percentile, "Games ELO", 1, 2)
 
 
-
 def create_stat_card(stats: dict, profile_image):
     im = functions.get_random_background()
 
@@ -152,15 +147,12 @@ def create_stat_card(stats: dict, profile_image):
     else:
         profile_pic(im, Image.open("image_creation/wb_logo.png"), True)
 
-    try:
-        steam = stats['steam']
-    except:
-        steam = False
+    steam = stats.get('steam', False)
     user_name(im, stats['squad'], stats["nick"], functions.time_since_last_seen(stats['time']), steam)
 
     kills_needed, deaths_to_avoid = functions.calculate_kdr_changes(int(stats['kills'].replace(",","")), int(stats['deaths'].replace(",","")))
-    kdr(im, stats['kills / death'], "??", kills_needed, deaths_to_avoid)
-    kpm(im, stats['kills / min'], "??")
+    kdr(im, str(round(float(stats['kills / death']), 1)), "??", kills_needed, deaths_to_avoid)
+    kpm(im, str(round(float(stats['kills / min']), 1)), "??")
     level(im, stats['level'], percentage=stats['progressPercentage'], xp=functions.format_large_number(stats['xp']), percentile=stats["xpPercentile"])
 
     create_backgrounds(im)

@@ -75,8 +75,6 @@ def get_autocompletion(query):
 
     return nicks
 
-print(get_autocompletion("000020832"))
-
 async def get_autocomplete(query):
     async with aiohttp.ClientSession() as session:
         async with session.get(f'https://wbapi.wbpjs.com/players/searchByName?query={query}') as resp:
@@ -112,9 +110,9 @@ async def username_autocomplete(current):
             app_commands.Choice(name=user, value=users[user]) 
             for user in users
         ] 
-    elif len(current) < 3:
+    elif len(current) < 2:
         return [
-                app_commands.Choice(name="Enter more than 2 characters to search!", value="too_short")
+                app_commands.Choice(name="Enter more than 1 character to search!", value="too_short")
             ]
     
     usernames = await get_autocomplete(current)
