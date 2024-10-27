@@ -6,8 +6,8 @@ from urllib.parse import urlparse
 
 import functions
 from image_creation.database_stuff.functions import fetch_uid, link_user, reset_uid
-from image_creation.get_stats import user
-from image_creation.main_stats import main_stat_page
+from image_creation.get_stats import squad_stats, user
+from image_creation.main_stats import main_stat_page, squad_page
 
 class Stats(discord.ui.View):
     def __init__(self, username:str, uid:str):
@@ -46,7 +46,10 @@ def stats(client):
             
         try:
             await interaction.response.send_message(content="<a:loading1:1295503606077980712>  Grabbing information...")
-            stats = await user.fetch_all(uid)
+            try:
+                stats = await user.fetch_all(uid)
+            except:
+                await interaction.response.send_message(content="Uhoh... something went wrong. Please try again!", ephemeral=True)
 
             await interaction.edit_original_response(content="<a:loading1:1295503606077980712>  Creating stat card...")
             stat_card = functions.convert_to_discord(main_stat_page.create_stat_card(stats=stats, profile_image=None))
@@ -62,6 +65,7 @@ def stats(client):
     async def stats_autocomplete(interaction: discord.Interaction, current: str) -> List[app_commands.Choice[str]]:
         return await user.username_autocomplete(current)
     
+
 def linkstats(client):
     @client.tree.command(name="linkstats", description="Link your stats to your discord account.")
     @app_commands.describe(link='Your stat\'s page link', uid='Your UID', username="In game nickname")
@@ -101,3 +105,34 @@ def linkstats(client):
     @linkstats.autocomplete('username')
     async def linkstats_autocomplete(interaction: discord.Interaction, current: str) -> List[app_commands.Choice[str]]:
         return await user.username_autocomplete(current)
+    
+
+def squad(client):
+    @client.tree.command(name="squad", description="Gets a squad's stats")
+    @app_commands.describe(squad='Squad to search for')
+    async def squad(interaction: discord.Interaction, squad:str):
+        if squad in client.squad_list:
+            try:
+                await interaction.response.send_message(content="<a:loading1:1295503606077980712>  Grabbing information... This could take a few seconds, so please be patient!")
+                squad_data = await squad_stats.fetch_squad(squad)
+                user_data = await squad_stats.fetch_squad_users(squad_data)
+                stats = squad_stats.parse_data(user_data, squad_data, squad)
+
+                await interaction.edit_original_response(content="<a:loading1:1295503606077980712>  Creating stat card...")
+                stat_card = functions.convert_to_discord(squad_page.create_stat_card(stats=stats, profile_image=None))
+
+                await interaction.edit_original_response(content="", attachments=[stat_card])
+            except:
+                await interaction.edit_original_response(content="Uhoh, an error occured!")
+        else:
+            await interaction.response.send_message(f"\"{squad}\" is not a valid squad!", ephemeral=True)
+
+    @squad.autocomplete('squad')
+    async def squad_autocomplete(
+        interaction: discord.Interaction,
+        current: str,
+    ) -> List[app_commands.Choice[str]]:
+        return [
+            app_commands.Choice(name=squad, value=squad)
+            for squad in client.squad_list if current.lower() in squad.lower()
+        ][:25]

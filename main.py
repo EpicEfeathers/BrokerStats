@@ -1,10 +1,9 @@
 # Discord imports
 import discord
 from discord import app_commands
-from discord.ext import commands
+from discord.ext import commands, tasks
 from typing import Optional
-import traceback
-import aiohttp
+import requests
 
 import logging
 
@@ -26,8 +25,9 @@ MY_GUILD = discord.Object(id=1295425214020194304)
 class MyClient(discord.Client):
     def __init__(self, *, intents: discord.Intents, activity: discord.Activity):
         super().__init__(intents=intents,activity=activity)
-
         self.tree = app_commands.CommandTree(self)
+        self.url = "https://wbapi.wbpjs.com/squad/getSquadList"
+        self.squad_list = requests.get(self.url).json()
 
     # In this basic example, we just synchronize the app commands to one guild.
     # Instead of specifying a guild to every command, we copy over our global commands instead.
@@ -37,12 +37,17 @@ class MyClient(discord.Client):
         self.tree.copy_global_to(guild=MY_GUILD)
         await self.tree.sync(guild=MY_GUILD)
 
+    @tasks.loop(hours=5.0)
+    async def get_squads(self):
+        self.squad_list = requests.get(self.url).json()
+
 intents = discord.Intents.default()
 client = MyClient(intents=intents,activity=activity)
 
 # When bot boots
 @client.event
 async def on_ready():
+    client.get_squads.start()
     print(f"Successfully logged in as \033[1m{client.user}\033[0m")
 
 
@@ -53,6 +58,7 @@ async def test(interaction: discord.Interaction):
 
 commands.stats(client)
 commands.linkstats(client)
+commands.squad(client)
 
 # error handling
 '''@client.tree.error
