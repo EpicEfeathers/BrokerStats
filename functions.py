@@ -4,7 +4,7 @@ import random
 from io import BytesIO
 import discord
 import math
-from datetime import datetime
+from datetime import datetime, timezone
 from dateutil.relativedelta import relativedelta
 
 OPACITY = 200
@@ -21,10 +21,11 @@ def draw_text(im, text, color, position, font_size, index, anchor):
 def draw_colored_text(im, text1, text2, color1, color2, position, font_size, index, anchor):
     draw = ImageDraw.Draw(im)
     font = ImageFont.truetype(FONT_PATH, font_size, index=index)
+    font2 = ImageFont.truetype(FONT_PATH, font_size, index=index)
     
     # Calculate the total width of the combined text (text1 + text2)
     bbox_text1 = draw.textbbox((0, 0), text1, font=font)
-    bbox_text2 = draw.textbbox((0, 0), text2, font=font)
+    bbox_text2 = draw.textbbox((0, 0), text2, font=font2)
     
     total_width = (bbox_text1[2] - bbox_text1[0]) + (bbox_text2[2] - bbox_text2[0])
     total_height = max(bbox_text1[3] - bbox_text1[1], bbox_text2[3] - bbox_text2[1])
@@ -40,6 +41,29 @@ def draw_colored_text(im, text1, text2, color1, color2, position, font_size, ind
     
     new_position = (centered_position[0] + (bbox_text1[2] - bbox_text1[0]), centered_position[1])
     draw.text(new_position, text2, font=font, fill=color2, anchor="lt")
+
+def draw_member_text(im, text1, text2, color, position, font_size, anchor):
+    draw = ImageDraw.Draw(im)
+    font = ImageFont.truetype(FONT_PATH, font_size, index=10)
+    font2 = ImageFont.truetype(FONT_PATH, font_size, index=7)
+    
+    # Calculate the total width of the combined text (text1 + text2)
+    bbox_text1 = draw.textbbox((0, 0), text1, font=font)
+    bbox_text2 = draw.textbbox((0, 0), text2, font=font2)
+    
+    total_width = (bbox_text1[2] - bbox_text1[0]) + (bbox_text2[2] - bbox_text2[0])
+    total_height = max(bbox_text1[3] - bbox_text1[1], bbox_text2[3] - bbox_text2[1])
+
+    if anchor == "mm":
+        # Center the text on the given position
+        centered_position = (position[0] - total_width // 2, position[1] - total_height // 2)
+    else:
+        centered_position = position
+
+    draw.text(centered_position, text1, font=font, fill=color, anchor="lm")
+    
+    new_position = (centered_position[0] + (bbox_text1[2] - bbox_text1[0]), centered_position[1])
+    draw.text(new_position, text2, font=font2, fill=color, anchor="lm")
 
 def text_bold(im, text, color, position, font_size, anchor):
     draw_text(im, text, color, position, font_size, 10, anchor=anchor)
@@ -168,3 +192,12 @@ def resize_logo(im):
 
 def format_large_number(number):
     return f"{number:,}"
+
+def uid_to_creation_date(uid):
+    # The first 8 characters represent the timestamp
+    timestamp = int(uid[:8], 16)
+
+    # Convert the timestamp to a datetime object
+    account_creation_date = datetime.fromtimestamp(timestamp, tz=timezone.utc)
+
+    return account_creation_date

@@ -58,12 +58,11 @@ def squad_name(im, squad:str):
     color = (156,156,248)  
     functions.text_bold(im, text=squad, color=color, position=(1520,Y_POSITION), font_size=80, anchor="mm")
 
-def squad_members(im, member_count:str):
+def squad_members(im, member_count:str, active_member_count:str):
     Y_POSITION = RIGHT_Y_POSITION + 400
-    # description
     functions.text_narrow(im, text="Squad Members:", color=(255,255,255), position=(LEFT_TEXT,Y_POSITION), font_size=50, anchor="lm")
     # kdr
-    functions.text_bold(im, text=member_count, color=(255,255,255), position=(LEFT_TEXT,Y_POSITION + 60), font_size=55, anchor="lm")
+    functions.draw_member_text(im=im, text1=str(member_count), text2=f" ({str(active_member_count)} active last week)", color=(255,255,255), position=(LEFT_TEXT,Y_POSITION+60), font_size=55, anchor="lm")
 
 # all the kdr related text
 def kdr(im, kdr:str, kills_needed:str, deaths_to_avoid:str):
@@ -144,7 +143,7 @@ def create_stat_card(stats: dict, profile_image):
     squad_name(im, stats['squad'])
 
     kills_needed, deaths_to_avoid = functions.calculate_kdr_changes(int(stats['kills']), int(stats['deaths']))
-    squad_members(im, stats["member_count"])
+    squad_members(im, stats["member_count"], stats["active_players"])
     kdr(im, str(round(float(stats['kdr']), 1)), kills_needed, deaths_to_avoid)
     kpm(im, str(round(float(stats['kpm']), 1)))
     level(im, stats['level'], xp=functions.format_large_number(stats['xp']))

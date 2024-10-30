@@ -1,10 +1,11 @@
 import requests
 from bs4 import BeautifulSoup
-import time
 import aiohttp
 import asyncio
-from discord import app_commands
+from datetime import datetime, timezone
+
 import json
+
 
 def parse_data(user_data, squad_stats, squad_name):
     member_count = squad_stats['member_count']
@@ -19,9 +20,17 @@ def parse_data(user_data, squad_stats, squad_name):
     kills_elo = round(sum(int(user["killsELO"]) for user in squad_stats['members']) / member_count, 1)
     games_elo = round(sum(int(user["gamesELO"]) for user in squad_stats['members']) / member_count, 1)
 
+    active_players = 0
+    for user in user_data:
+        if datetime.now(timezone.utc).timestamp() - user["time"] < 604800: # 604800s = 1 week
+            active_players += 1
+
+    users = [user['nick'] for user in squad_stats['members']]
+
     info = {
         "squad": squad_name,
         "member_count": member_count,
+        "active_players": active_players,
         "kdr": kdr,
         "kpm": kpm,
         "level": squad_stats["average_level"],
@@ -31,7 +40,8 @@ def parse_data(user_data, squad_stats, squad_name):
         "classic wins": classic_wins,
         "br wins": br_wins,
         "kills_elo": kills_elo,
-        "games_elo": games_elo
+        "games_elo": games_elo,
+        "users": users
     }
 
     return info
@@ -41,6 +51,11 @@ def parse_data(user_data, squad_stats, squad_name):
 async def fetch(session, url):
     async with session.get(url) as response:
         return await response.json()
+
+async def fetch_time(session, url):
+    async with session.get(url) as response:
+        data = await response.json()
+        return data.get("time")
     
 async def scrape(session, uid):
     URL = f"https://stats.warbrokers.io/players/i/{uid}"
@@ -86,12 +101,22 @@ async def fetch_squad_users(squad_stats):
 
         tasks = []
         for uid in uids:
+            tasks.append(fetch_time(session, f"https://wbapi.wbpjs.com/players/getPlayer?uid={uid}"))
             tasks.append(scrape(session, uid))
         
         # Execute all requests concurrently
         api_stats = await asyncio.gather(*tasks)
+        #print(json.dumps(api_stats, sort_keys=True, indent=4))
+
+        new_list = []
+        for i in range(len(api_stats)):
+            if i % 2 == 0:
+                api_stats[i+1]["time"] = api_stats[i]
+                new_list.append(api_stats[i+1])
+        #print(json.dumps(new_list, sort_keys=True, indent=4))
+
+        return new_list
         
-        return api_stats
     
 def get_autocompletion(query):
     response = requests.get(f"https://wbapi.wbpjs.com/players/searchByName?query={query}").json()
@@ -138,29 +163,8 @@ async def get_autocomplete(query):
     return users
 
 
-'''async def username_autocomplete(current):
-    if len(current) == 0:
-        users = {'SAUNA MAKKARA': '5a4d14e9bfea71227e1fc4bf', 'TheyTookMyChat': '610dc399fd3c7a560e43287a', 'DEEBS': '5f2f9ee9bfea71685aa1e3f2', 'Walrus': '5fc9142ad142af9d623787a1', 'redrum': '5c382ee5d142af341a8053b2', 'Froggy': '6484dbc3d142af01608f2bdf', 'Grenade Bot': '61674a4efe3c7aff128efa73', 'geedolphin': '606c7b9dd142af4c188d9439', 'Nachtfalke': '5fe46c35fd3c7ac26198cf0c', 'Milan Kundera': '60a6a302d142af1f1d389c83', 'Y_Not!': '60006e69fd3c7ae8191e0cb4', 'Doki Doki': '5fb961e0d142af8b4885c87d', 'Tekker': '5f3d25e6fe3c7a43054828fa', 'Milan': '5aeba7b4fd3c7a805dbbd69d', 'Norw12': '647457c7bfea71f84a834ba2', 'Pandalorian': '5f5ac5bebfea715955d07e20', 'Alex140': '623f320bbfea718964e5b257', 'Nhat Huy': '6288fb09fe3c7a1319592978', 'BerzerkinG': '5d988fa4fe3c7a484cbe8cba', 'EncryptR_': '5e57527efe3c7acc73342809', 'ZZBeany': '5f2c63f1bfea71b305e60c98', 'Slayer': '61b18818fd3c7aa31f0e4aee', 'Nandy': '5d0fb3a0bfea71355fef4595', 'Guest1': '5db1f95fbfea71c96e8b4592', 'Guest97977': '5d45f84bfd3c7a8e36f1e671'}
-        return [
-            app_commands.Choice(name=user, value=users[user]) 
-            for user in users
-        ] 
-    elif len(current) < 2:
-        return [
-                app_commands.Choice(name="Enter more than 1 character to search!", value="too_short")
-            ]
-    
-    usernames = await get_autocomplete(current)
-    return [
-        app_commands.Choice(name=username, value=usernames[username]) 
-        for username in usernames
-    ]'''
-
-
 '''squad_data = asyncio.run(fetch_squad('UMS'))
-print(squad_data)
 user_stats = asyncio.run(fetch_squad_users(squad_data))
-
-info = parse_data(user_stats, squad_data, squad_name)
+info = parse_data(user_stats, squad_data, "UMS")
 
 print(info)'''
