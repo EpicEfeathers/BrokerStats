@@ -12,6 +12,7 @@ LEFT_TEXT = 1160
 RIGHT_TEXT = 1880
 RIGHT_Y_POSITION = 75
 FONT_PATH = "/System/Library/Fonts/HelveticaNeue.ttc"
+print(os.getcwd())
 
 def draw_text(im, text, color, position, font_size, index, anchor):
     draw = ImageDraw.Draw(im)

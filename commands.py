@@ -6,64 +6,29 @@ from urllib.parse import urlparse
 
 import functions
 from image_creation.database_stuff.functions import fetch_uid, link_user, reset_uid
-from image_creation.get_stats import squad_stats, user
-from image_creation.main_stats import main_stat_page, squad_page
 
-class Stats(discord.ui.View):
-    def __init__(self, username:str, uid:str):
+#from utils import menu_paginator
+from utils.commands.squad import squad as squad_utils
+from utils.commands.stats import stats as stats_utils
+
+class squad_stats_view(discord.ui.View):
+    def __init__(self, squad_name:str):
         super().__init__()
-        self.username = username
-        self.uid = uid
 
-        self.add_item(discord.ui.Button(label='Stats page', url=f"https://stats.warbrokers.io/players/i/{uid}"))
-        self.add_item(discord.ui.Button(label='POMPS\'s stats', url=f"https://stats.wbpjs.com/players/{uid}"))
+        self.add_item(discord.ui.Button(label='Stats page', url=f"https://stats.warbrokers.io/squads/{squad_name}"))
+        self.add_item(discord.ui.Button(label='POMPS\'s stats', url=f"https://stats.wbpjs.com/squads/{squad_name}"))
         self.add_item(discord.ui.Button(label='Support server', url="https://discord.gg/8r52JxkJez"))
-
-    @discord.ui.button(label='Copy UID', style=discord.ButtonStyle.primary)
-    async def copy_uid(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.send_message(f'{self.username}\'s UID:```{self.uid}```', ephemeral=True)
 
 
 def stats(client):
     @client.tree.command(name="stats", description="Gets a user's stats")
     @app_commands.describe(uid='User\'s UID', username="In game nickname")
     async def stats(interaction: discord.Interaction, uid: Optional[str], username:Optional[str]):
-        # check if they inputted the 1 character description option thing
-        if username == "too_short":
-            await interaction.response.send_message(f"You need to enter at least 2 characters to search!", ephemeral=True)
-            return
-
-        if username:
-            uid = username
-        if uid:
-            if len(uid) != 24 or not uid.isalnum():
-                return await interaction.response.send_message(f"\"{uid}\" is not a valid WarBrokers uid!", ephemeral=True)
-        else:
-            try:
-                uid = fetch_uid(interaction.user.id)
-            except:
-                return await interaction.response.send_message(content="You have not linked your stats yet. Use </linkstats:1296119982429831168> to do so!")
-            
-        try:
-            await interaction.response.send_message(content="<a:loading1:1295503606077980712>  Grabbing information...")
-            try:
-                stats = await user.fetch_all(uid)
-            except:
-                await interaction.response.send_message(content="Uhoh... something went wrong. Please try again!", ephemeral=True)
-
-            await interaction.edit_original_response(content="<a:loading1:1295503606077980712>  Creating stat card...")
-            stat_card = functions.convert_to_discord(main_stat_page.create_stat_card(stats=stats, profile_image=None))
-
-            view = Stats(stats["nick"], uid)
-            await interaction.edit_original_response(content="", attachments=[stat_card], view=view)
-            await view.wait()
-        except Exception:
-            print(traceback.format_exc())
-            await interaction.edit_original_response(content=f"\"{uid}\" is not a valid WarBrokers uid!", ephemeral=True)
+        await stats_utils.stats_command(interaction, uid, username, False)
 
     @stats.autocomplete('username')
     async def stats_autocomplete(interaction: discord.Interaction, current: str) -> List[app_commands.Choice[str]]:
-        return await user.username_autocomplete(current)
+        return await stats_utils.username_autocomplete(current)
     
 
 def linkstats(client):
@@ -104,34 +69,17 @@ def linkstats(client):
 
     @linkstats.autocomplete('username')
     async def linkstats_autocomplete(interaction: discord.Interaction, current: str) -> List[app_commands.Choice[str]]:
-        return await user.username_autocomplete(current)
+        return await stats_utils.username_autocomplete(current)
     
 
 def squad(client):
     @client.tree.command(name="squad", description="Gets a squad's stats")
     @app_commands.describe(squad='Squad to search for')
     async def squad(interaction: discord.Interaction, squad:str):
-        if squad in client.squad_list:
-            try:
-                await interaction.response.send_message(content="<a:loading1:1295503606077980712>  Grabbing information... This could take a few seconds, so please be patient!")
-                squad_data = await squad_stats.fetch_squad(squad)
-                user_data = await squad_stats.fetch_squad_users(squad_data)
-                stats = squad_stats.parse_data(user_data, squad_data, squad)
-
-                await interaction.edit_original_response(content="<a:loading1:1295503606077980712>  Creating stat card...")
-                stat_card = functions.convert_to_discord(squad_page.create_stat_card(stats=stats, profile_image=None))
-
-                await interaction.edit_original_response(content="", attachments=[stat_card])
-            except:
-                await interaction.edit_original_response(content="Uhoh, an error occured!")
-        else:
-            await interaction.response.send_message(f"\"{squad}\" is not a valid squad!", ephemeral=True)
+        await squad_utils.squad_command(client, squad, interaction)
 
     @squad.autocomplete('squad')
-    async def squad_autocomplete(
-        interaction: discord.Interaction,
-        current: str,
-    ) -> List[app_commands.Choice[str]]:
+    async def squad_autocomplete(interaction: discord.Interaction,current: str) -> List[app_commands.Choice[str]]:
         return [
             app_commands.Choice(name=squad, value=squad)
             for squad in client.squad_list if current.lower() in squad.lower()

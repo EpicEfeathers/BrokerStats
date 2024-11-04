@@ -1,10 +1,7 @@
-import requests
 from bs4 import BeautifulSoup
 import aiohttp
 import asyncio
 from datetime import datetime, timezone
-
-import json
 
 
 def parse_data(user_data, squad_stats, squad_name):
@@ -25,7 +22,10 @@ def parse_data(user_data, squad_stats, squad_name):
         if datetime.now(timezone.utc).timestamp() - user["time"] < 604800: # 604800s = 1 week
             active_players += 1
 
-    users = [user['nick'] for user in squad_stats['members']]
+    users = {}
+    for user in squad_stats['members']:
+        users[user['nick']] = user['uid']
+    #users = [user['nick'] for user in squad_stats['members']]
 
     info = {
         "squad": squad_name,
@@ -116,53 +116,7 @@ async def fetch_squad_users(squad_stats):
         #print(json.dumps(new_list, sort_keys=True, indent=4))
 
         return new_list
-        
     
-def get_autocompletion(query):
-    response = requests.get(f"https://wbapi.wbpjs.com/players/searchByName?query={query}").json()
-
-    nicks = []
-    for entry in response:
-        nicks.append(entry["nick"])
-
-    if "PleaseChangeNick" in nicks:
-        nicks.remove("PleaseChangeNick")
-
-    def thing(x):
-        return (not x.lower().startswith("hit"), x)
-    
-    nicks = sorted(nicks, key=thing)
-
-    return nicks
-
-async def get_autocomplete(query):
-    async with aiohttp.ClientSession() as session:
-        async with session.get(f'https://wbapi.wbpjs.com/players/searchByName?query={query}') as resp:
-            if resp.status == 200:
-                data = await resp.json()  # Assuming the API returns JSON
-        
-                # turns list of dictionaries into 1 dict
-                users = {}
-                for datum in data:
-                    users[datum["nick"]] = datum["uid"]
-
-                #removes banned / changes nicknames from the list
-                users.pop("PleaseChangeNick", None)
-                # sorts with anything starting with the query first
-                def thing(x):
-                    return (not x[0].lower().startswith(query), x[0])
-                sorted_ = sorted(users.items(), key=thing)
-
-                users = {}
-                for user in sorted_:
-                    users[user[0]] = user[1]
-
-            else:
-                users = []
-
-    return users
-
-
 '''squad_data = asyncio.run(fetch_squad('UMS'))
 user_stats = asyncio.run(fetch_squad_users(squad_data))
 info = parse_data(user_stats, squad_data, "UMS")

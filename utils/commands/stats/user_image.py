@@ -1,6 +1,5 @@
 from PIL import Image, ImageDraw
 import functions
-from ..get_stats import user
 
 OPACITY = functions.OPACITY
 LEFT_TEXT = functions.LEFT_TEXT
@@ -147,21 +146,21 @@ def create_stat_card(stats: dict, profile_image):
     else:
         profile_pic(im, Image.open("image_creation/wb_logo.png"), True)
 
-    steam = stats.get('steam', False)
+    '''steam = stats.get('steam', False)
     user_name(im, stats['squad'], stats["nick"], functions.time_since_last_seen(stats['time']), steam)
 
     kills_needed, deaths_to_avoid = functions.calculate_kdr_changes(int(stats['kills'].replace(",","")), int(stats['deaths'].replace(",","")))
     kdr(im, str(round(float(stats['kills / death']), 1)), "??", kills_needed, deaths_to_avoid)
     kpm(im, str(round(float(stats['kills / min']), 1)), "??")
-    level(im, stats['level'], percentage=stats['progressPercentage'], xp=functions.format_large_number(stats['xp']), percentile=stats["xpPercentile"])
+    level(im, stats['level'], percentage=stats['progressPercentage'], xp=functions.format_large_number(stats['xp']), percentile=stats["xpPercentile"])'''
 
     create_backgrounds(im)
-    kill_card(im, stats['kills'], "??")
+    '''kill_card(im, stats['kills'], "??")
     deaths_card(im, stats['deaths'], "??")
     classic_wins(im, stats['classic mode wins'], "??")
     br_wins(im, stats['battle royale wins'], "??")
     killsELO(im, stats['killsELO'], stats["killsEloPercentile"])
-    gamesELO(im, stats["gamesELO"], stats["gamesEloPercentile"])
+    gamesELO(im, stats["gamesELO"], stats["gamesEloPercentile"])'''
 
 
     return im

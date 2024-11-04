@@ -2,11 +2,8 @@ from PIL import Image, ImageDraw
 import sys
 import os
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-import image_creation.main_stats.squad_page as squad_page
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 import functions
-from image_creation.get_stats import user
 
 OPACITY = functions.OPACITY
 LEFT_TEXT = functions.LEFT_TEXT

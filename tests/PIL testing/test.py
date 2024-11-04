@@ -133,6 +133,8 @@ def death_card(deaths):
     # death count
     if str(deaths)[0] == 1:
         text(str(deaths), (255,0,0), (position[0] - 100, position[1] + 10), 125)
+    functions.text_bold(im, text=kdr, color=(255,255,255), position=(LEFT_TEXT,Y_POSITION + 60), font_size=55, anchor="lm")
+
     else:
         text(str(deaths), (255,0,0), (position[0], position[1] + 10), 125)
     #centred_text(im, str(kills), 125, (0,255,0), (position[0], position[1] + size[1]/15))

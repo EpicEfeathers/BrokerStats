@@ -5,3 +5,4 @@
 *.pyc
 /image_creation/main_stats/__pycache__
 image_creation/main_stats/__pycache__/main_stat_page.cpython-312.pyc
+/tests
