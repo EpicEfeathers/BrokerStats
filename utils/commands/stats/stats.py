@@ -48,12 +48,16 @@ async def stats_command(interaction, uid, username, ephemeral:bool):
         except:
             await interaction.response.send_message(content="Uhoh... something went wrong. Please try again!", ephemeral=True)
 
+        print(time.time() - start)
+        
         await interaction.edit_original_response(content="<a:loading1:1295503606077980712>  Creating stat card...")
-        stat_card = functions.convert_to_discord(user_image.create_stat_card(stats=stats, profile_image=None))
+        start = time.time()
+        stat_card = discord.File(fp=user_image.create_stats_card(stats=stats), filename="stat_card.png")
+        #stat_card = user_image.create_stats_card(stats=stats)
+        print(time.time() - start)
 
         view = user_stats_view(stats["nick"], uid)
         await interaction.edit_original_response(content="", attachments=[stat_card], view=view)
-        print(time.time() - start)
         await view.wait()
     except Exception:
         print(traceback.format_exc())

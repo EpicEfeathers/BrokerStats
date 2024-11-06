@@ -11,7 +11,7 @@ OPACITY = 200
 LEFT_TEXT = 1160
 RIGHT_TEXT = 1880
 RIGHT_Y_POSITION = 75
-FONT_PATH = "/System/Library/Fonts/HelveticaNeue.ttc"
+FONT_PATH = "HelveticaNeue.ttc"
 print(os.getcwd())
 
 def draw_text(im, text, color, position, font_size, index, anchor):
@@ -84,6 +84,8 @@ def get_random_background():
     image_path = os.path.join(folder_path, image)
     im = Image.open(image_path)
     im = im.filter(ImageFilter.GaussianBlur(radius=5.0))
+
+    #im = Image.open("/Users/elingrell/Downloads/background1.png")
 
     return im
 
@@ -178,9 +180,11 @@ def convert_to_discord(im):
         return discord.File(fp=image_binary, filename='image.png')
     
 def resize_logo(im):
-    profile_pic = im.resize((225,225), Image.LANCZOS).convert("RGBA")
+    profile_pic = im.resize((113,113), Image.LANCZOS).convert("RGBA")
+    #profile_pic = im.resize((225,225), Image.LANCZOS).convert("RGBA")
 
-    new_size = (256, 256)
+    new_size = (128, 128)
+    #new_size = (256, 256)
     background = Image.new('RGBA', new_size, (0, 0, 0, 0))
 
     #centers old image on new image

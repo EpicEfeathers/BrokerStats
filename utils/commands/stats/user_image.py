@@ -1,166 +1,188 @@
-from PIL import Image, ImageDraw
-import functions
+import cairo
+import time
+import math
+from io import BytesIO
 
-OPACITY = functions.OPACITY
-LEFT_TEXT = functions.LEFT_TEXT
-RIGHT_TEXT = functions.RIGHT_TEXT
-RIGHT_Y_POSITION = functions.RIGHT_Y_POSITION
-FONT_PATH = functions.FONT_PATH
+def calculate_kdr_changes(kills, deaths):
+    kdr = kills/deaths
+    rounded = round(kdr, 1)
+
+    kills_needed = math.ceil(((rounded + 0.05) * deaths) - kills)
+
+    deaths_avoid = math.floor((kills / (rounded - 0.05))) - deaths + 1
+
+    return kills_needed, deaths_avoid
+
+def format_large_number(number):
+    return f"{number:,}"
+
+def convert_to_discord(surface):
+    image_stream = BytesIO()
+    surface.write_to_png(image_stream)  # Write to the BytesIO object
+    image_stream.seek(0)
+
+    return image_stream
+
+OPACITY = 200
+LEFT_TEXT = 870
+RIGHT_TEXT = 1410
+RIGHT_Y_POSITION = 56
+
+THIN = "Helvetica Neue Light"
+BOLD = "Helvetica Neue"
+REGULAR = "Helvetica Neue"
 
 # cards
-SIZE = (500, 250)
-TOP_Y_POSITION = 335 #295
-SPACING = int((1120 - (2*SIZE[0]))/3)
+SIZE = (375, 188)
+TOP_Y_POSITION = 251 #295
+SPACING = int((840 - (2*SIZE[0]))/3)
 LEFT = SPACING + SIZE[1]
-RIGHT = (1120 - SIZE[1]) - SPACING
-LOGO_SIZE = (150,134)
-PROFILE_PIC_SIZE = (256, 256)
+RIGHT = (840 - SIZE[1]) - SPACING
+LOGO_SIZE = (113,101)
+PROFILE_PIC_SIZE = (192, 192)
 
+def add_text_element(text_info, context):
+    font_path, text, position, color, font_size, alignment = text_info  # Unpack text information
+    context.select_font_face(font_path, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
+    context.set_font_size(font_size)
+    if not isinstance(text, list) or text[0] == "":
+        if isinstance(text, list):
+            text = text[1]
+            context.set_source_rgba(*color[1])
+        else:
+            context.set_source_rgba(*color)
+        
+        # check if first item of list or just tuple
+        '''if isinstance(color, list):
+            context.set_source_rgba(*color[0])  # Set color in floats between 0-1
+        else:
+            context.set_source_rgba(*color)'''
 
-def logo(im):
-    logo = Image.open("image_creation/wb_logo.png")
-
-    logo = logo.resize(LOGO_SIZE, Image.LANCZOS).convert("RGBA")
-
-    im.paste(logo, (73,36), logo)
-
-    functions.text_bold(im=im, text="User Stats", color=(255, 255, 255), position=(250, 103), font_size=75, anchor="lm")
-
-
-def profile_pic(im, profile_picture, wb_logo:bool):
-    if wb_logo:
-        profile_picture = functions.resize_logo(profile_picture)
+        x, y = calculate_position(context, str(text), position, alignment)
+        # Add the text
+        context.move_to(x, y)
+        context.show_text(str(text))
+        context.fill()
     else:
-        profile_picture = profile_picture.resize(PROFILE_PIC_SIZE, Image.LANCZOS).convert("RGBA")
+        context.set_source_rgba(*color[0])  # Set color in floats between 0-1
 
-    mask_size = (profile_picture.size[0]*4, profile_picture.size[1]*4)
-    mask = Image.new("L", mask_size, 0)
-    draw = ImageDraw.Draw(mask)
-    draw.ellipse((0, 0, mask_size[0], mask_size[1]), fill=255)
+        position1, position2 = calculate_two_positions(context, str(text[0]), str(text[1]), position)
 
-    mask = mask.resize(profile_picture.size, Image.LANCZOS)
+        context.move_to(*position1)
+        context.show_text(str(text[0]))
 
-    circular_img = Image.new("RGBA", profile_picture.size, (0, 0, 0, 0))
-    circular_img.paste(profile_picture, (0,0), mask)
+        context.set_source_rgb(*color[1])  # Set color in floats between 0-1
 
-    im.paste(circular_img, (1392,RIGHT_Y_POSITION), circular_img)
 
-def user_name(im, squad:str, username:str, time_played:str, steam:bool):
-    Y_POSITION = RIGHT_Y_POSITION + 300
-    # username
-    if steam:
-        color = (245,179,62)
+        context.move_to(*position2)
+        context.show_text(str(text[1]))
+        context.fill()
+
+def calculate_position(context, text, position, alignment):
+    extents = context.text_extents(text)
+    text_width = extents.width
+    text_height = extents.height
+    
+    x = position[0] - 1 # adjustment as it seemed to place it one pixel to the right (maybe should use -2)
+    if alignment[0] == 'm':
+        x -= text_width / 2
+    elif alignment[0] == 'r':
+        x -= text_width
+
+    y = position[1]
+    if alignment[1] == 'm':
+        y += text_height / 2
+    elif alignment[1] == 'r':
+        y += text_height
+
+
+    return x, y
+
+def calculate_two_positions(context, text1, text2, position):
+    space_width = 15 # looks nice
+
+    text = f"{text1}{text2}"
+    extents = context.text_extents(text)
+    total_text_width = extents.width + space_width
+    total_text_height = extents.height
+
+    extents = context.text_extents(text1)
+    text1_width = extents.width
+
+    #space_width = 10.564 # calculated lol, only works for one size!!!!
+    #center align
+    middle_y = position[1]
+    middle_y += total_text_height / 2
+
+    return (position[0] - total_text_width/2, middle_y), (position[0] - total_text_width/2 + text1_width + space_width, middle_y)
+
+
+# Function to add multiple pieces of text with Cairo
+def text(text_elements):
+    cairo_surface = cairo.ImageSurface.create_from_png("utils/commands/stats/3:4 size template.png")
+    context = cairo.Context(cairo_surface)
+
+    # Loop through each text element and add it to the context
+    for text_info in text_elements:
+        add_text_element(text_info, context)
+
+    return cairo_surface
+
+def create_stats_card(stats):
+    start = time.time()
+    kills_needed, deaths_to_avoid = calculate_kdr_changes(int(stats['kills'].replace(",","")), int(stats['deaths'].replace(",","")))
+    # Define the text elements to add (text, position, color)
+    if stats["steam"]:
+        username_color = (245/255,179/255,62/255)
     else:
-        color=(255,255,255)
-    functions.draw_colored_text(im=im, text1=squad, text2=f" {username}", color1=(156,156,248), color2=color, position=(1520, Y_POSITION), font_size=50, index=10, anchor="mm")
-    '''if squad == "":
-        functions.text_bold(im, text=username, color=color, position=(1520,Y_POSITION), font_size=50, anchor="mm")
-    else:
-        functions.draw_colored_text(im=im, text1=squad, text2=f" {username}", color1=(156,156,248), color2=color, position=(1520, Y_POSITION), font_size=50, index=10, anchor="mm")'''
-    # time played
-    functions.text_narrow(im, text=f"{time_played}", color=(255,255,255), position=(1520,Y_POSITION + 50), font_size=50, anchor="mm")
+        username_color = (1,1,1)
+    text_elements = [
+        # NAME
+        (BOLD, [stats["squad"], stats["nick"]], (1140, RIGHT_Y_POSITION + 225), [(156/255, 156/255, 248/255), username_color], 38, "mm"),
+        (THIN, "Last seen 1 day ago", (1140, RIGHT_Y_POSITION + 263), (1, 1, 1), 38, "mm"),
+        # KDR
+        (BOLD, str(round(float(stats['kills / death']), 1)), (LEFT_TEXT, RIGHT_Y_POSITION + 323 + 45), (1, 1, 1), 41, "lm"),
+        (THIN, "Top ??%", (RIGHT_TEXT, RIGHT_Y_POSITION + 323), (1, 1, 1), 30, "rm"),
+        (THIN, f"{kills_needed} kills to advance", (LEFT_TEXT, RIGHT_Y_POSITION + 323 + 90), (1, 1, 1), 38, "lm"),
+        (THIN, f"{deaths_to_avoid} deaths to avoid", (LEFT_TEXT, RIGHT_Y_POSITION + 323 + 128), (1, 1, 1), 38, "lm"),
+        # KPM
+        #(THIN, "Kills / Min", (LEFT_TEXT, RIGHT_Y_POSITION + 509), (1, 1, 1), 38, "lm"),
+        (BOLD, str(round(float(stats['kills / min']), 1)), (LEFT_TEXT, RIGHT_Y_POSITION + 509 + 45), (1, 1, 1), 41, "lm"),
+        (THIN, "Top ??%", (RIGHT_TEXT, RIGHT_Y_POSITION + 509), (1, 1, 1), 30, "rm"),
+        # LEVEL
+        (BOLD, f"Level {stats['level']}", (LEFT_TEXT, RIGHT_Y_POSITION + 615), (1, 1, 1), 41, "lm"),
+        (THIN, f"Top {stats["xpPercentile"]}%", (RIGHT_TEXT, RIGHT_Y_POSITION + 615), (1, 1, 1), 30, "rm"),
+        (THIN, f"{stats['progressPercentage']} to next level", (LEFT_TEXT, RIGHT_Y_POSITION + 615 + 38), (1, 1, 1), 38, "lm"),
+        (THIN, f"XP: {format_large_number(stats['xp'])}", (LEFT_TEXT, RIGHT_Y_POSITION + 615 + 75), (1, 1, 1), 38, "lm"),
 
-# all the kdr related text
-def kdr(im, kdr:str, percentile:str, kills_needed:str, deaths_to_avoid:str):
-    Y_POSITION = RIGHT_Y_POSITION + 430
-    # description
-    functions.text_narrow(im, text="Kills / Death:", color=(255,255,255), position=(LEFT_TEXT,Y_POSITION), font_size=50, anchor="lm")
-    # kdr
-    functions.text_bold(im, text=kdr, color=(255,255,255), position=(LEFT_TEXT,Y_POSITION + 60), font_size=55, anchor="lm")
-    # percentile
-    functions.text_narrow(im, text=f"Top {percentile}%", color=(255,255,255), position=(RIGHT_TEXT,Y_POSITION), font_size=40, anchor="rm")
+        # KILLS
+        #(THIN, "Kills:", (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION - 45), (1, 1, 1), 41, "lm"),
+        (BOLD, stats["kills"], (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION), (1, 1, 1), 41, "lm"),
+        (THIN, "Top ??%", (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 45), (1, 1, 1), 30, "lm"),
+        # DEATHS
+        #(THIN, "Deaths:", (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION - 45), (1, 1, 1), 41, "lm"),
+        (BOLD, stats["deaths"], (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION), (1, 1, 1), 41, "lm"),
+        (THIN, "Top ??%", (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 45), (1, 1, 1), 30, "lm"),
+        # KILLS
+        #(THIN, "Classic Wins:", (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + (SPACING + SIZE[1]) - 45), (1, 1, 1), 41, "lm"),
+        (BOLD, stats["classic mode wins"], (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + (SPACING + SIZE[1])), (1, 1, 1), 41, "lm"),
+        (THIN, "Top ??%", (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + (SPACING + SIZE[1]) + 45), (1, 1, 1), 30, "lm"),
+        # KILLS
+        #(THIN, "BR Wins:", (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + (SPACING + SIZE[1])- 45), (1, 1, 1), 41, "lm"),
+        (BOLD, stats["battle royale wins"], (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + (SPACING + SIZE[1])), (1, 1, 1), 41, "lm"),
+        (THIN, "Top ??%", (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + (SPACING + SIZE[1]) + 45), (1, 1, 1), 30, "lm"),
+        # KILLS
+        #(THIN, "Kills ELO", (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 2*(SPACING + SIZE[1]) - 45), (1, 1, 1), 41, "lm"),
+        (BOLD, stats["killsELO"], (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 2*(SPACING + SIZE[1])), (1, 1, 1), 41, "lm"),
+        (THIN, "Top ??%", (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 2*(SPACING + SIZE[1])+ 45), (1, 1, 1), 30, "lm"),
+        # KILLS
+        #(THIN, "Games ELO", (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 2*(SPACING + SIZE[1])- 45), (1, 1, 1), 41, "lm"),
+        (BOLD, stats["gamesELO"], (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 2*(SPACING + SIZE[1])), (1, 1, 1), 41, "lm"),
+        (THIN, "Top ??%", (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 2*(SPACING + SIZE[1])+ 45), (1, 1, 1), 30, "lm"),
+    ]
 
-    # kd calculations
-    functions.text_narrow(im, text=f"{kills_needed} kills to advance", color=(255,255,255), position=(LEFT_TEXT,Y_POSITION + 120), font_size=50, anchor="lm")
-    functions.text_narrow(im, text=f"{deaths_to_avoid} kills to avoid", color=(255,255,255), position=(LEFT_TEXT,Y_POSITION + 170), font_size=50, anchor="lm")
+    surface = text(text_elements)
 
-# all the kpm related text
-def kpm(im, kpm:str, percentile:str):
-    Y_POSITION = RIGHT_Y_POSITION + 679
-    # description
-    functions.text_narrow(im, text="Kills / Min:", color=(255,255,255), position=(LEFT_TEXT,Y_POSITION), font_size=50, anchor="lm")
-    # kpm
-    functions.text_bold(im, text=kpm, color=(255,255,255), position=(LEFT_TEXT,Y_POSITION + 60), font_size=55, anchor="lm")
-    # percentile
-    functions.text_narrow(im, text=f"Top {percentile}%", color=(255,255,255), position=(RIGHT_TEXT,Y_POSITION), font_size=40, anchor="rm")
+    print(time.time() - start)
 
-# all the level related text
-def level(im, level:str, percentage:str, xp:str, percentile:str):
-    Y_POSITION = RIGHT_Y_POSITION + 820
-    # level
-    functions.text_bold(im, text=f"Level {level}", color=(255,255,255), position=(LEFT_TEXT,Y_POSITION), font_size=55, anchor="lm")
-    # percent to next level
-    functions.text_narrow(im, text=f"{percentage} to next level", color=(255,255,255), position=(LEFT_TEXT,Y_POSITION + 50), font_size=50, anchor="lm")
-    # XP
-    functions.text_narrow(im, text=f"XP: {xp}", color=(255,255,255), position=(LEFT_TEXT,Y_POSITION + 100), font_size=50, anchor="lm")
-    # percentile
-    functions.text_narrow(im, text=f"Top {percentile}%", color=(255,255,255), position=(RIGHT_TEXT,Y_POSITION), font_size=40, anchor="rm")
-
-# creates the card backgrounds on the image
-def create_backgrounds(im):
-    for height in range(3):
-        functions.create_rounded_rectangle(image=im, size=SIZE, corner_radius=10, color=(0,0,0,OPACITY), position=(LEFT,TOP_Y_POSITION + height*(SPACING+SIZE[1])))
-        functions.create_rounded_rectangle(image=im, size=SIZE, corner_radius=10, color=(0,0,0,OPACITY), position=(RIGHT,TOP_Y_POSITION + height*(SPACING+SIZE[1])))
-
-# the base function to create a card text on the image
-def create_card(im, info:str, percentile:str, category:str, column:int, row:int):
-    if column == 0:
-        x_pos = LEFT - (SIZE[0]/2) + 30
-    else:
-        x_pos = RIGHT - (SIZE[0]/2) + 30
-
-    y_pos = TOP_Y_POSITION + row*(SPACING + SIZE[1])
-
-    functions.text_narrow(im, text=f"{category}:", color=(255,255,255), position=(x_pos, y_pos - 60), font_size=55, anchor="lm")
-    functions.text_bold(im, text=info, color=(255,255,255), position=(x_pos, y_pos), font_size=55, anchor="lm")
-    functions.text_narrow(im, text=f"Top {percentile}%", color=(255,255,255), position=(x_pos, y_pos + 60), font_size=40, anchor="lm")
-
-def kill_card(im, kills:str, percentile:str):
-    create_card(im, kills, percentile, "Kills", 0, 0)
-
-def deaths_card(im, deaths:str, percentile:str):
-    create_card(im, deaths, percentile, "Deaths", 1, 0)
-
-def classic_wins(im, wins:str, percentile:str):
-    create_card(im, wins, percentile, "Classic Wins", 0, 1)
-
-def br_wins(im, wins:str, percentile:str):
-    create_card(im, wins, percentile, "BR Wins", 1, 1)
-
-def killsELO(im, elo:str, percentile:str):
-    create_card(im, elo, percentile, "Kills ELO", 0, 2)
-
-def gamesELO(im, elo:str, percentile:str):
-    create_card(im, elo, percentile, "Games ELO", 1, 2)
-
-
-def create_stat_card(stats: dict, profile_image):
-    im = functions.get_random_background()
-
-
-    logo(im)
-    functions.create_right_background(im)
-    functions.bottom_bar(im)
-    if profile_image:
-        profile_pic(im, Image.open("image_creation/profile_pic.png"), False)
-    else:
-        profile_pic(im, Image.open("image_creation/wb_logo.png"), True)
-
-    '''steam = stats.get('steam', False)
-    user_name(im, stats['squad'], stats["nick"], functions.time_since_last_seen(stats['time']), steam)
-
-    kills_needed, deaths_to_avoid = functions.calculate_kdr_changes(int(stats['kills'].replace(",","")), int(stats['deaths'].replace(",","")))
-    kdr(im, str(round(float(stats['kills / death']), 1)), "??", kills_needed, deaths_to_avoid)
-    kpm(im, str(round(float(stats['kills / min']), 1)), "??")
-    level(im, stats['level'], percentage=stats['progressPercentage'], xp=functions.format_large_number(stats['xp']), percentile=stats["xpPercentile"])'''
-
-    create_backgrounds(im)
-    '''kill_card(im, stats['kills'], "??")
-    deaths_card(im, stats['deaths'], "??")
-    classic_wins(im, stats['classic mode wins'], "??")
-    br_wins(im, stats['battle royale wins'], "??")
-    killsELO(im, stats['killsELO'], stats["killsEloPercentile"])
-    gamesELO(im, stats["gamesELO"], stats["gamesEloPercentile"])'''
-
-
-    return im
+    return convert_to_discord(surface)
