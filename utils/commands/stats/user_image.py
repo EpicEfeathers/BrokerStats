@@ -2,6 +2,8 @@ import cairo
 import time
 import math
 from io import BytesIO
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
 
 def calculate_kdr_changes(kills, deaths):
     kdr = kills/deaths
@@ -22,6 +24,24 @@ def convert_to_discord(surface):
     image_stream.seek(0)
 
     return image_stream
+
+def time_since_last_seen(timestamp: int):
+    now = datetime.now()
+    last_played = datetime.fromtimestamp(timestamp)
+    delta = relativedelta(now, last_played)
+
+    if delta.years > 0:
+        return f"Last seen {delta.years} year{'s' if delta.years > 1 else ''} ago"
+    elif delta.months > 0:
+        return f"Last seen {delta.months} month{'s' if delta.months > 1 else ''} ago"
+    elif delta.days > 0:
+        return f"Last seen {delta.days} day{'s' if delta.days > 1 else ''} ago"
+    elif delta.hours > 0:
+        return f"Last seen {delta.hours} hour{'s' if delta.hours > 1 else ''} ago"
+    elif delta.minutes > 0:
+        return f"Last seen {delta.minutes} minute{'s' if delta.minutes > 1 else ''} ago"
+    else:
+        return "Online now"
 
 OPACITY = 200
 LEFT_TEXT = 870
@@ -139,7 +159,7 @@ def create_stats_card(stats):
     text_elements = [
         # NAME
         (BOLD, [stats["squad"], stats["nick"]], (1140, RIGHT_Y_POSITION + 225), [(156/255, 156/255, 248/255), username_color], 38, "mm"),
-        (THIN, "Last seen 1 day ago", (1140, RIGHT_Y_POSITION + 263), (1, 1, 1), 38, "mm"),
+        (THIN, time_since_last_seen(stats["time"]), (1140, RIGHT_Y_POSITION + 263), (1, 1, 1), 38, "mm"),
         # KDR
         (BOLD, str(round(float(stats['kills / death']), 1)), (LEFT_TEXT, RIGHT_Y_POSITION + 323 + 45), (1, 1, 1), 41, "lm"),
         (THIN, "Top ??%", (RIGHT_TEXT, RIGHT_Y_POSITION + 323), (1, 1, 1), 30, "rm"),
@@ -151,7 +171,7 @@ def create_stats_card(stats):
         (THIN, "Top ??%", (RIGHT_TEXT, RIGHT_Y_POSITION + 509), (1, 1, 1), 30, "rm"),
         # LEVEL
         (BOLD, f"Level {stats['level']}", (LEFT_TEXT, RIGHT_Y_POSITION + 615), (1, 1, 1), 41, "lm"),
-        (THIN, f"Top {stats["xpPercentile"]}%", (RIGHT_TEXT, RIGHT_Y_POSITION + 615), (1, 1, 1), 30, "rm"),
+        (THIN, f"Top {stats['xpPercentile']}%", (RIGHT_TEXT, RIGHT_Y_POSITION + 615), (1, 1, 1), 30, "rm"),
         (THIN, f"{stats['progressPercentage']} to next level", (LEFT_TEXT, RIGHT_Y_POSITION + 615 + 38), (1, 1, 1), 38, "lm"),
         (THIN, f"XP: {format_large_number(stats['xp'])}", (LEFT_TEXT, RIGHT_Y_POSITION + 615 + 75), (1, 1, 1), 38, "lm"),
 
