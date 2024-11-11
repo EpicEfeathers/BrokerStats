@@ -152,9 +152,10 @@ def create_stats_card(stats):
     start = time.time()
     kills_needed, deaths_to_avoid = calculate_kdr_changes(int(stats['kills'].replace(",","")), int(stats['deaths'].replace(",","")))
     # Define the text elements to add (text, position, color)
-    if stats["steam"]:
-        username_color = (245/255,179/255,62/255)
-    else:
+    try:
+        if stats["steam"]:
+            username_color = (245/255,179/255,62/255)
+    except:
         username_color = (1,1,1)
     text_elements = [
         # NAME
