@@ -2,11 +2,10 @@ import discord
 from discord import app_commands
 import traceback
 import functions
-from image_creation.database_stuff.functions import fetch_uid
+from utils.database_stuff.functions import fetch_uid
 from utils.commands.stats import get_user, user_image
 import aiohttp
 import requests
-import time
 
 
 class user_stats_view(discord.ui.View):
@@ -25,7 +24,6 @@ class user_stats_view(discord.ui.View):
 
 # check if they inputted the 1 character description option thing
 async def stats_command(interaction, uid, username, ephemeral:bool):
-    start = time.time()
     if username == "too_short":
         await interaction.response.send_message(f"You need to enter at least 2 characters to search!", ephemeral=True)
         return
@@ -48,13 +46,10 @@ async def stats_command(interaction, uid, username, ephemeral:bool):
         except:
             await interaction.response.send_message(content="Uhoh... something went wrong. Please try again!", ephemeral=True)
 
-        print(time.time() - start)
         
         await interaction.edit_original_response(content="<a:loading1:1295503606077980712>  Creating stat card...")
-        start = time.time()
         stat_card = discord.File(fp=user_image.create_stats_card(stats=stats), filename="stat_card.png")
         #stat_card = user_image.create_stats_card(stats=stats)
-        print(time.time() - start)
 
         view = user_stats_view(stats["nick"], uid)
         await interaction.edit_original_response(content="", attachments=[stat_card], view=view)

@@ -1,161 +1,157 @@
-from PIL import Image, ImageDraw, ImageFont, ImageFilter
-import time
-import random
+from PIL import Image, ImageDraw
+import sys
+import os
 
-def create_rounded_rectangle(image, size, corner_radius, color, position, scale_factor=3):
-    width, height = size
-    scaled_size = (width * scale_factor, height * scale_factor)
-    scaled_radius = corner_radius * scale_factor
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+import functions
 
-    # centre on position, rather than top left
-    position = int(position[0] - width/2), int(position[1] - height/2)
-    
-    # Create a scaled-up image
-    rectangle = Image.new('RGBA', scaled_size, (0, 0, 0, 0))
-    draw = ImageDraw.Draw(rectangle)
-    
-    # Draw the rounded rectangle on the scaled image
-    draw.rounded_rectangle(
-        [(0, 0), scaled_size],
-        radius=scaled_radius,
-        fill=color
-    )
-    
-    # Downscale the image to the target size to apply anti-aliasing
-    rounded_rectangle = rectangle.resize(size, Image.LANCZOS)
-    image.paste(rounded_rectangle, position, rounded_rectangle)
+OPACITY = functions.OPACITY
+LEFT_TEXT = functions.LEFT_TEXT
+RIGHT_TEXT = functions.RIGHT_TEXT
+RIGHT_Y_POSITION = functions.RIGHT_Y_POSITION
+FONT_PATH = functions.FONT_PATH
 
-def text(text, color, position, font_size):
-    draw = ImageDraw.Draw(im)
-    myFont = ImageFont.truetype("/System/Library/Fonts/Supplemental/Arial.ttf", font_size)
-    draw.text(position, str(text), font=myFont, fill=color, anchor="mm")
-    position = tuple(map(int, position))
-    im.putpixel(position, (255,0,0))
+# cards
+SIZE = (500, 250)
+TOP_Y_POSITION = 335 #295
+SPACING = int((1120 - (2*SIZE[0]))/3)
+LEFT = SPACING + SIZE[1]
+RIGHT = (1120 - SIZE[1]) - SPACING
+LOGO_SIZE = (150,134)
+PROFILE_PIC_SIZE = (256, 256)
 
 
+def logo(im):
+    logo = Image.open("image_creation/wb_logo.png")
 
-def text_aligned_right(image, text, font_size, color, position):
-    draw = ImageDraw.Draw(im)
+    logo = logo.resize(LOGO_SIZE, Image.LANCZOS).convert("RGBA")
 
-    font = ImageFont.truetype("/System/Library/Fonts/Supplemental/Arial.ttf", font_size)
+    im.paste(logo, (73,36), logo)
 
-    # drawing text size 
-    bbox = draw.textbbox((0,0), text, font=font)
-
-    text_width = bbox[2] - bbox[0]
-    text_height = bbox[3] - bbox[1]
-    x = position[0] - text_width
-    y = position[1] - text_height/2
-
-    draw.text((x,y), text, fill=color, font_size=font_size, font=font)
-
-start = time.time()
-im = Image.open("images/backgrounds/pacific.png")
-im = im.filter(ImageFilter.GaussianBlur(radius=5.0))
-width, height = im.size
-end = time.time()
-print(end-start)
+    functions.text_bold(im=im, text="Squad Stats", color=(255, 255, 255), position=(250, 103), font_size=75, anchor="lm")
 
 
-def user_card(username: str):
-    # Example usage:
-    size = (1000, 200)
-    middle_width = int((width - size[0])/2)
-    corner_radius = 50
-    color = (0, 0, 0, 150)
-    position = (width/2, 125) #centers horizontally
+def profile_pic(im, profile_picture, wb_logo:bool):
+    if wb_logo:
+        profile_picture = functions.resize_logo(profile_picture)
+    else:
+        profile_picture = profile_picture.resize(PROFILE_PIC_SIZE, Image.LANCZOS).convert("RGBA")
 
-    create_rounded_rectangle(im, size, corner_radius, color, position)
+    mask_size = (profile_picture.size[0]*4, profile_picture.size[1]*4)
+    mask = Image.new("L", mask_size, 0)
+    draw = ImageDraw.Draw(mask)
+    draw.ellipse((0, 0, mask_size[0], mask_size[1]), fill=255)
 
-    text(username, (255,255,255), (width/2, position[1]-size[1] * 3/20), (size[1]/2.5))
-    text("Last seen today", (200,200,200), (width/2, position[1]+size[1] * 9/40), (size[1]/5))
+    mask = mask.resize(profile_picture.size, Image.LANCZOS)
 
-def level_card(level: int, percentage:int):
-    size = (2000, 150)
-    corner_radius = 75
-    background_color = (0, 0, 0, 150)
-    position = (width/2, 350) #centers horizontally
+    circular_img = Image.new("RGBA", profile_picture.size, (0, 0, 0, 0))
+    circular_img.paste(profile_picture, (0,0), mask)
 
-    create_rounded_rectangle(im, size, corner_radius, background_color, position)
+    im.paste(circular_img, (1392,RIGHT_Y_POSITION), circular_img)
 
-    progress_bar_size = (int((size[0] * 31/40)), int(size[1]/3))
-    progress_bar_position = (width/2, position[1])
-    #progress bar background
-    create_rounded_rectangle(im, progress_bar_size, corner_radius, (0,0,0), progress_bar_position)
-    #progress bar foreground
-    filled_bar_size = (849,int(size[1]/3))
-    filled_bar_position = (width/2 - (progress_bar_size[0] - filled_bar_size[0])/2 - 1, progress_bar_position[1])
-    create_rounded_rectangle(im, filled_bar_size, corner_radius, (255,255,255), filled_bar_position) # correct size
+def squad_name(im, squad:str):
+    Y_POSITION = RIGHT_Y_POSITION + 300
+    # username
+    color = (156,156,248)  
+    functions.text_bold(im, text=squad, color=color, position=(1520,Y_POSITION), font_size=80, anchor="mm")
 
-    #percentage
-    text_aligned_right(im, "60%", (size[1]/3.3), (255,255,255), (filled_bar_position[0] + filled_bar_size[0]/2 - size[1] / 20 + 105, progress_bar_position[1] - size[1]/20 - 2)) 
-    #current level
-    text(str(level), (255,255,255), (width/2-850, progress_bar_position[1]), (size[1]/2))
-    #next level
-    text(str(level+1), (255,255,255), (width/2+850, progress_bar_position[1]), (size[1]/2))
-    #Percentile
-    #text("149,201 XP", (200,200,200), (width/2, position[1] - 50), (size[1]/5))
-    #centred_text(im, "149,201 XP", (size[1]/5), (200,200,200), (width/2, position[1] - 65))
-    #XP amount
-    #text("Top 52%", (200,200,200), (width/2, position[1] + 50), (size[1]/6))
-    #centred_text(im, "Top 52%", (size[1]/6), (200,200,200), (width/2, position[1] + 60))
+def squad_members(im, member_count:str, active_member_count:str):
+    Y_POSITION = RIGHT_Y_POSITION + 400
+    functions.text_narrow(im, text="Squad Members:", color=(255,255,255), position=(LEFT_TEXT,Y_POSITION), font_size=50, anchor="lm")
+    # kdr
+    functions.draw_member_text(im=im, text1=str(member_count), text2=f" ({str(active_member_count)} active last week)", color=(255,255,255), position=(LEFT_TEXT,Y_POSITION+60), font_size=55, anchor="lm")
 
-def kill_card(kills):
-    #background
-    size = (600, 300)
-    corner_radius = 50
-    position = (int((width - size[0])/4), 630)
-    create_rounded_rectangle(im, size, corner_radius, (0,0,0,150), position)
-
-    # kill text
-    text("Kills", (0,255,0), (position[0], position[1] - 90), 55)
-    #centred_text(im, "Kills", 75, (0,255,0), (position[0], position[1] - size[1]/4))
-
-    # kill count
-    text(str(kills), (0,255,0), (position[0], position[1] + 10), 125)
-    #centred_text(im, str(kills), 125, (0,255,0), (position[0], position[1] + size[1]/15))
-    text("Top 5%", (200,200,200), (position[0], position[1] + 100), 50)
-
-    im.putpixel(position, (255,0,0))
-
-
-def death_card(deaths):
-    #background
-    size = (600, 300)
-    corner_radius = 50
-    position = (int(width/2), 630)
-    create_rounded_rectangle(im, size, corner_radius, (0,0,0,150), position)
-
-    # death text
-    text("Kills", (255,0,0), (position[0], position[1] - 90), 55)
-    #centred_text(im, "Kills", 75, (0,255,0), (position[0], position[1] - size[1]/4))
-
-    # death count
-    if str(deaths)[0] == 1:
-        text(str(deaths), (255,0,0), (position[0] - 100, position[1] + 10), 125)
+# all the kdr related text
+def kdr(im, kdr:str, kills_needed:str, deaths_to_avoid:str):
+    Y_POSITION = RIGHT_Y_POSITION + 534
+    # description
+    functions.text_narrow(im, text="Squad Kills / Death:", color=(255,255,255), position=(LEFT_TEXT,Y_POSITION), font_size=50, anchor="lm")
+    # kdr
     functions.text_bold(im, text=kdr, color=(255,255,255), position=(LEFT_TEXT,Y_POSITION + 60), font_size=55, anchor="lm")
 
+
+
+# all the kpm related text
+def kpm(im, kpm:str):
+    Y_POSITION = RIGHT_Y_POSITION + 667
+    # description
+    functions.text_narrow(im, text="Squad Kills / Min:", color=(255,255,255), position=(LEFT_TEXT,Y_POSITION), font_size=50, anchor="lm")
+    # kpm
+    functions.text_bold(im, text=kpm, color=(255,255,255), position=(LEFT_TEXT,Y_POSITION + 60), font_size=55, anchor="lm")
+
+# all the level related text
+def level(im, level:str, xp:str):
+    Y_POSITION = RIGHT_Y_POSITION + 800
+    # level
+    functions.text_narrow(im, text="Avg Squad Level:", color=(255,255,255), position=(LEFT_TEXT,Y_POSITION), font_size=50, anchor="lm")
+    # kpm
+    functions.text_bold(im, text=level, color=(255,255,255), position=(LEFT_TEXT,Y_POSITION + 60), font_size=55, anchor="lm")
+    # XP
+    functions.text_narrow(im, text=f"Total XP: {xp}", color=(255,255,255), position=(LEFT_TEXT,Y_POSITION + 120), font_size=50, anchor="lm")
+
+# creates the card backgrounds on the image
+def create_backgrounds(im):
+    for height in range(3):
+        functions.create_rounded_rectangle(image=im, size=SIZE, corner_radius=10, color=(0,0,0,OPACITY), position=(LEFT,TOP_Y_POSITION + height*(SPACING+SIZE[1])))
+        functions.create_rounded_rectangle(image=im, size=SIZE, corner_radius=10, color=(0,0,0,OPACITY), position=(RIGHT,TOP_Y_POSITION + height*(SPACING+SIZE[1])))
+
+# the base function to create a card text on the image
+def create_card(im, info:str, category:str, column:int, row:int):
+    if column == 0:
+        x_pos = LEFT - (SIZE[0]/2) + 30
     else:
-        text(str(deaths), (255,0,0), (position[0], position[1] + 10), 125)
-    #centred_text(im, str(kills), 125, (0,255,0), (position[0], position[1] + size[1]/15))
-    text("Top 5%", (200,200,200), (position[0], position[1] + 100), 50)
+        x_pos = RIGHT - (SIZE[0]/2) + 30
+    y_pos = TOP_Y_POSITION + row*(SPACING + SIZE[1])
 
-    im.putpixel(position, (255,0,0))
+    functions.text_narrow(im, text=f"{category}:", color=(255,255,255), position=(x_pos, y_pos - 30), font_size=55, anchor="lm")
+    functions.text_bold(im, text=info, color=(255,255,255), position=(x_pos, y_pos+30), font_size=55, anchor="lm")
 
-def kdr_card(kills):
-    #background
-    size = (600, 300)
-    corner_radius = 50
-    position = ((3 * width + size[0]) / 4, 630)
-    create_rounded_rectangle(im, size, corner_radius, (0,0,0,150), position)
+def kill_card(im, kills:str):
+    create_card(im, kills, "Total Kills", 0, 0)
+
+def deaths_card(im, deaths:str):
+    create_card(im, deaths, "Total Deaths", 1, 0)
+
+def classic_wins(im, wins:str):
+    create_card(im, wins, "Total Classic Wins", 0, 1)
+
+def br_wins(im, wins:str):
+    create_card(im, wins, "Total BR Wins", 1, 1)
+
+def killsELO(im, elo:str):
+    create_card(im, elo, "Avg Kills ELO", 0, 2)
+
+def gamesELO(im, elo:str):
+    create_card(im, elo, "Avg Games ELO", 1, 2)
 
 
-user_card(" EpicEfeathers")
-level_card(15, 56)
-kill_card(random.randint(1, 999))
-death_card(100)
-kdr_card(100)
+def create_stat_card(stats: dict, profile_image):
+    im = functions.get_random_background()
 
 
-#create_rounded_rectangle(im, (100, 40), 10, (255, 255, 255), position=(int(width/2),20))
-im.show()
+    logo(im)
+    functions.create_right_background(im)
+    functions.bottom_bar(im)
+    if profile_image:
+        profile_pic(im, Image.open("image_creation/profile_pic.png"), False)
+    else:
+        profile_pic(im, Image.open("image_creation/wb_logo.png"), True)
+
+    squad_name(im, stats['squad'])
+
+    kills_needed, deaths_to_avoid = functions.calculate_kdr_changes(int(stats['kills']), int(stats['deaths']))
+    squad_members(im, stats["member_count"], stats["active_players"])
+    kdr(im, str(round(float(stats['kdr']), 1)), kills_needed, deaths_to_avoid)
+    kpm(im, str(round(float(stats['kpm']), 1)))
+    level(im, stats['level'], xp=functions.format_large_number(stats['xp']))
+
+    create_backgrounds(im)
+    kill_card(im, functions.format_large_number(stats['kills']))
+    deaths_card(im, functions.format_large_number(stats['deaths']))
+    classic_wins(im, functions.format_large_number(stats['classic wins']))
+    br_wins(im, functions.format_large_number(stats['br wins']))
+    killsELO(im, stats['kills_elo'])
+    gamesELO(im, stats["games_elo"])
+
+
+    return im

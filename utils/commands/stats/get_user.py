@@ -1,6 +1,5 @@
 import requests
 from bs4 import BeautifulSoup
-import time
 import aiohttp
 import asyncio
 from discord import app_commands

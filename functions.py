@@ -75,19 +75,16 @@ def text(im, text, color, position, font_size, anchor):
 def text_narrow(im, text, color, position, font_size, anchor):
     draw_text(im, text, color, position, font_size, 7, anchor=anchor)
 
-def get_random_background():
-    folder_path = "image_creation/backgrounds"
+def get_random_background(folder_path):
     png_files = [file for file in os.listdir(folder_path) if file.endswith('.png')]
 
     image = random.choice(png_files)
 
     image_path = os.path.join(folder_path, image)
-    im = Image.open(image_path)
-    im = im.filter(ImageFilter.GaussianBlur(radius=5.0))
 
     #im = Image.open("/Users/elingrell/Downloads/background1.png")
 
-    return im
+    return image_path
 
 def create_right_background(im):
     shape = [(1120, 0), (1920, 1080)]

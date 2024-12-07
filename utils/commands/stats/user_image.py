@@ -1,9 +1,12 @@
 import cairo
-import time
 import math
 from io import BytesIO
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
+import os
+import random
+
+import functions
 
 def calculate_kdr_changes(kills, deaths):
     kdr = kills/deaths
@@ -139,7 +142,8 @@ def calculate_two_positions(context, text1, text2, position):
 
 # Function to add multiple pieces of text with Cairo
 def text(text_elements):
-    cairo_surface = cairo.ImageSurface.create_from_png("utils/commands/stats/3:4 size template.png")
+    image_path = functions.get_random_background("utils/commands/stats/backgrounds")
+    cairo_surface = cairo.ImageSurface.create_from_png(image_path)
     context = cairo.Context(cairo_surface)
 
     # Loop through each text element and add it to the context
@@ -149,7 +153,6 @@ def text(text_elements):
     return cairo_surface
 
 def create_stats_card(stats):
-    start = time.time()
     kills_needed, deaths_to_avoid = calculate_kdr_changes(int(stats['kills'].replace(",","")), int(stats['deaths'].replace(",","")))
     # Define the text elements to add (text, position, color)
     try:
@@ -163,13 +166,13 @@ def create_stats_card(stats):
         (THIN, time_since_last_seen(stats["time"]), (1140, RIGHT_Y_POSITION + 263), (1, 1, 1), 38, "mm"),
         # KDR
         (BOLD, str(round(float(stats['kills / death']), 1)), (LEFT_TEXT, RIGHT_Y_POSITION + 323 + 45), (1, 1, 1), 41, "lm"),
-        (THIN, "Top ??%", (RIGHT_TEXT, RIGHT_Y_POSITION + 323), (1, 1, 1), 30, "rm"),
+        (THIN, "Top ??%", (RIGHT_TEXT, RIGHT_Y_POSITION + 323), (0.75, 0.75, 0.75), 30, "rm"),
         (THIN, f"{kills_needed} kills to advance", (LEFT_TEXT, RIGHT_Y_POSITION + 323 + 90), (1, 1, 1), 38, "lm"),
         (THIN, f"{deaths_to_avoid} deaths to avoid", (LEFT_TEXT, RIGHT_Y_POSITION + 323 + 128), (1, 1, 1), 38, "lm"),
         # KPM
         #(THIN, "Kills / Min", (LEFT_TEXT, RIGHT_Y_POSITION + 509), (1, 1, 1), 38, "lm"),
         (BOLD, str(round(float(stats['kills / min']), 1)), (LEFT_TEXT, RIGHT_Y_POSITION + 509 + 45), (1, 1, 1), 41, "lm"),
-        (THIN, "Top ??%", (RIGHT_TEXT, RIGHT_Y_POSITION + 509), (1, 1, 1), 30, "rm"),
+        (THIN, "Top ??%", (RIGHT_TEXT, RIGHT_Y_POSITION + 509), (0.75, 0.75, 0.75), 30, "rm"),
         # LEVEL
         (BOLD, f"Level {stats['level']}", (LEFT_TEXT, RIGHT_Y_POSITION + 615), (1, 1, 1), 41, "lm"),
         (THIN, f"Top {stats['xpPercentile']}%", (RIGHT_TEXT, RIGHT_Y_POSITION + 615), (1, 1, 1), 30, "rm"),
@@ -179,31 +182,29 @@ def create_stats_card(stats):
         # KILLS
         #(THIN, "Kills:", (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION - 45), (1, 1, 1), 41, "lm"),
         (BOLD, stats["kills"], (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION), (1, 1, 1), 41, "lm"),
-        (THIN, "Top ??%", (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 45), (1, 1, 1), 30, "lm"),
+        (THIN, "Top ??%", (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 45), (0.75, 0.75, 0.75), 30, "lm"),
         # DEATHS
         #(THIN, "Deaths:", (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION - 45), (1, 1, 1), 41, "lm"),
         (BOLD, stats["deaths"], (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION), (1, 1, 1), 41, "lm"),
-        (THIN, "Top ??%", (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 45), (1, 1, 1), 30, "lm"),
+        (THIN, "Top ??%", (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 45), (0.75, 0.75, 0.75), 30, "lm"),
         # KILLS
         #(THIN, "Classic Wins:", (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + (SPACING + SIZE[1]) - 45), (1, 1, 1), 41, "lm"),
         (BOLD, stats["classic mode wins"], (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + (SPACING + SIZE[1])), (1, 1, 1), 41, "lm"),
-        (THIN, "Top ??%", (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + (SPACING + SIZE[1]) + 45), (1, 1, 1), 30, "lm"),
+        (THIN, "Top ??%", (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + (SPACING + SIZE[1]) + 45), (0.75, 0.75, 0.75), 30, "lm"),
         # KILLS
         #(THIN, "BR Wins:", (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + (SPACING + SIZE[1])- 45), (1, 1, 1), 41, "lm"),
         (BOLD, stats["battle royale wins"], (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + (SPACING + SIZE[1])), (1, 1, 1), 41, "lm"),
-        (THIN, "Top ??%", (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + (SPACING + SIZE[1]) + 45), (1, 1, 1), 30, "lm"),
+        (THIN, "Top ??%", (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + (SPACING + SIZE[1]) + 45), (0.75, 0.75, 0.75), 30, "lm"),
         # KILLS
         #(THIN, "Kills ELO", (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 2*(SPACING + SIZE[1]) - 45), (1, 1, 1), 41, "lm"),
         (BOLD, stats["killsELO"], (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 2*(SPACING + SIZE[1])), (1, 1, 1), 41, "lm"),
-        (THIN, "Top ??%", (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 2*(SPACING + SIZE[1])+ 45), (1, 1, 1), 30, "lm"),
+        (THIN, f"Top {stats["killsEloPercentile"]}%", (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 2*(SPACING + SIZE[1])+ 45), (0.75, 0.75, 0.75), 30, "lm"),
         # KILLS
         #(THIN, "Games ELO", (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 2*(SPACING + SIZE[1])- 45), (1, 1, 1), 41, "lm"),
         (BOLD, stats["gamesELO"], (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 2*(SPACING + SIZE[1])), (1, 1, 1), 41, "lm"),
-        (THIN, "Top ??%", (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 2*(SPACING + SIZE[1])+ 45), (1, 1, 1), 30, "lm"),
+        (THIN, f"Top {stats["gamesEloPercentile"]}%", (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 2*(SPACING + SIZE[1])+ 45), (0.75, 0.75, 0.75), 30, "lm"),
     ]
 
     surface = text(text_elements)
-
-    print(time.time() - start)
 
     return convert_to_discord(surface)

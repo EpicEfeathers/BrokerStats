@@ -38,7 +38,6 @@ class first_view(BaseView):
 
     async def on_timeout(self) -> None:
         if self.is_active:
-            print("timed out 1")
             #if not item.disabled:
             for item in self.children:
                 if item.url is None:
@@ -75,7 +74,6 @@ class second_view(BaseView):
 
     async def on_timeout(self) -> None:
         if self.is_active:
-            print("timed out 2")
             for item in self.children:
                 #if not item.disabled:
                 if isinstance(item, discord.ui.Button) and item.url is None:

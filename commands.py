@@ -3,9 +3,10 @@ from discord import app_commands
 from typing import Optional, List
 import traceback
 from urllib.parse import urlparse
+import datetime
 
 import functions
-from image_creation.database_stuff.functions import fetch_uid, link_user, reset_uid
+from utils.database_stuff.functions import fetch_uid, link_user, reset_uid
 
 #from utils import menu_paginator
 from utils.commands.squad import squad as squad_utils
@@ -84,3 +85,22 @@ def squad(client):
             app_commands.Choice(name=squad, value=squad)
             for squad in client.squad_list if current.lower() in squad.lower()
         ][:25]
+
+
+def help(client):
+    @client.tree.command(name="help", description="Get help for Broker Stats")
+    async def help(interaction: discord.Interaction):
+        embed=discord.Embed(title="**Help**", color=0xfa3b06, timestamp=datetime.datetime.now(datetime.timezone.utc))
+        embed.set_author(name="Broker Stats", icon_url='https://cdn.discordapp.com/attachments/1295439550356918423/1304897010847191131/bot_logo.png?ex=67310f8b&is=672fbe0b&hm=77add4dce4676937b9fc6142ae418f9d2c4dfc87f2dda632ebb68eaedd7442aa&')
+        embed.set_thumbnail(url='https://cdn.discordapp.com/attachments/1295439550356918423/1304897010847191131/bot_logo.png?ex=67310f8b&is=672fbe0b&hm=77add4dce4676937b9fc6142ae418f9d2c4dfc87f2dda632ebb68eaedd7442aa&')
+        
+        stats = client.tree.get_command("stats")
+        embed.add_field(name="</stats:1295437878654144515>", value=f":chart_with_upwards_trend: {stats.description}\nLink your own stats using </linkstats:1296119982429831168>.", inline=False)
+        
+        linkstats = client.tree.get_command("linkstats")
+        embed.add_field(name="</linkstats:1296119982429831168>", value=f":link: {linkstats.description}\nUse this command to link your stats page to the bot.", inline=False)
+        
+        squad = client.tree.get_command("squad")
+        embed.add_field(name="</squad:1299897695854395453>", value=f":bar_chart: {squad.description}\nSee a detailed overview of a squad.", inline=False)
+        
+        await interaction.response.send_message(embed=embed)
