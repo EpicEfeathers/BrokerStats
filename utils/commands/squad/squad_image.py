@@ -1,6 +1,8 @@
 import cairo
-import math
 from io import BytesIO
+
+from utils import functions
+
 
 def format_large_number(number):
     return f"{number:,}"
@@ -108,7 +110,8 @@ def calculate_two_positions(context, text, position):
 
 # Function to add multiple pieces of text with Cairo
 def text(text_elements):
-    cairo_surface = cairo.ImageSurface.create_from_png("utils/commands/squad/backgrounds/1.png")
+    image_path = functions.get_random_background("utils/commands/squad/backgrounds")
+    cairo_surface = cairo.ImageSurface.create_from_png(image_path)
     context = cairo.Context(cairo_surface)
 
     # Loop through each text element and add it to the context
@@ -122,7 +125,7 @@ def create_stat_card(stats):
         # NAME
         (THIN, stats['squad'], (1140, RIGHT_Y_POSITION + 225), (156/255, 156/255, 248/255), 60, "mm"),
         # ACTIVE MEMBERS
-        ([BOLD, THIN], [str(stats["member_count"]), f"({stats["active_players"]} active this week)"], (LEFT_TEXT, RIGHT_Y_POSITION + 300 + 45), (1, 1, 1), 41, "lm"),
+        ([BOLD, THIN], [str(stats['member_count']), f"({stats['active_players']} active this week)"], (LEFT_TEXT, RIGHT_Y_POSITION + 300 + 45), (1, 1, 1), 41, "lm"),
         # KDR
         (BOLD, str(round(float(stats['kdr']), 1)), (LEFT_TEXT, RIGHT_Y_POSITION + 401 + 45), (1, 1, 1), 41, "lm"),
         # KPM

@@ -17,7 +17,7 @@ TOP_Y_POSITION = 251 #295
 SPACING = int((840 - (2*SIZE[0]))/3)
 LEFT = SPACING + SIZE[1]
 RIGHT = (840 - SIZE[1]) - SPACING
-LOGO_SIZE = (113,101)
+LOGO_SIZE = (85,85)
 PROFILE_PIC_SIZE = (192, 192)
 
 def get_random_background(blur:bool):
@@ -69,9 +69,9 @@ def logo(im):
 
     logo = logo.resize(LOGO_SIZE, Image.LANCZOS).convert("RGBA")
 
-    im.paste(logo, (55,27), logo)
-
-    functions.text_bold(im=im, text="User Stats", color=(255, 255, 255), position=(188, 77), font_size=56, anchor="lm")
+    functions.create_rounded_rectangle(image=im, size=(780,100), corner_radius=25, color=(0,0,0,OPACITY), position=(420, 79))
+    im.paste(logo, (55, int(79 - LOGO_SIZE[1]/2) + 2), logo)
+    functions.text_bold(im=im, text="Squad Overview", color=(255, 255, 255), position=(LEFT - (SIZE[0]/2) + 125, 77), font_size=45, anchor="lm")
 
 
 def profile_pic(im, profile_picture, wb_logo:bool):

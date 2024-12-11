@@ -1,50 +1,6 @@
 import cairo
-import math
-from io import BytesIO
-from datetime import datetime
-from dateutil.relativedelta import relativedelta
-import os
-import random
 
-import functions
-
-def calculate_kdr_changes(kills, deaths):
-    kdr = kills/deaths
-    rounded = round(kdr, 1)
-
-    kills_needed = math.ceil(((rounded + 0.05) * deaths) - kills)
-
-    deaths_avoid = math.floor((kills / (rounded - 0.05))) - deaths + 1
-
-    return kills_needed, deaths_avoid
-
-def format_large_number(number):
-    return f"{number:,}"
-
-def convert_to_discord(surface):
-    image_stream = BytesIO()
-    surface.write_to_png(image_stream)  # Write to the BytesIO object
-    image_stream.seek(0)
-
-    return image_stream
-
-def time_since_last_seen(timestamp: int):
-    now = datetime.now()
-    last_played = datetime.fromtimestamp(timestamp)
-    delta = relativedelta(now, last_played)
-
-    if delta.years > 0:
-        return f"Last seen {delta.years} year{'s' if delta.years > 1 else ''} ago"
-    elif delta.months > 0:
-        return f"Last seen {delta.months} month{'s' if delta.months > 1 else ''} ago"
-    elif delta.days > 0:
-        return f"Last seen {delta.days} day{'s' if delta.days > 1 else ''} ago"
-    elif delta.hours > 0:
-        return f"Last seen {delta.hours} hour{'s' if delta.hours > 1 else ''} ago"
-    elif delta.minutes > 0:
-        return f"Last seen {delta.minutes} minute{'s' if delta.minutes > 1 else ''} ago"
-    else:
-        return "Online now"
+from utils import functions, cairo_functions
 
 OPACITY = 200
 LEFT_TEXT = 870
@@ -64,49 +20,41 @@ RIGHT = (840 - SIZE[1]) - SPACING
 LOGO_SIZE = (113,101)
 PROFILE_PIC_SIZE = (192, 192)
 
-def add_text_element(text_info, context):
+'''def add_text_element(text_info, context):
+    """
+    Adds text element to image (way too complicated).
+    Can handle adding a single color, or multiple colors.
+    """
+
     font_path, text, position, color, font_size, alignment = text_info  # Unpack text information
     context.select_font_face(font_path, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
     context.set_font_size(font_size)
-    if not isinstance(text, list) or text[0] == "":
-        if isinstance(text, list):
-            text = text[1]
-            context.set_source_rgba(*color[1])
-        else:
-            context.set_source_rgba(*color)
-        
-        # check if first item of list or just tuple
-        '''if isinstance(color, list):
-            context.set_source_rgba(*color[0])  # Set color in floats between 0-1
-        else:
-            context.set_source_rgba(*color)'''
 
-        x, y = calculate_position(context, str(text), position, alignment)
-        # Add the text
+    if not isinstance(text, list) or text[0] == "": # for single colors
+
+        x, y = calculate_position(context, str(text), position, alignment) # calculates proper position based on alignment
+
+        context.set_source_rgba(*color)
         context.move_to(x, y)
         context.show_text(str(text))
-        context.fill()
-    else:
-        context.set_source_rgba(*color[0])  # Set color in floats between 0-1
+    else: # for multiple colors
+        positions = calculate_multiple_positions(context, text, position, alignment) # calculated proper positions of different segments based on alignment
 
-        position1, position2 = calculate_two_positions(context, str(text[0]), str(text[1]), position)
-
-        context.move_to(*position1)
-        context.show_text(str(text[0]))
-
-        context.set_source_rgb(*color[1])  # Set color in floats between 0-1
-
-
-        context.move_to(*position2)
-        context.show_text(str(text[1]))
-        context.fill()
+        for i, position in enumerate(positions):
+            context.set_source_rgb(*color[i])
+            context.move_to(*position)
+            context.show_text(str(text[i]))
 
 def calculate_position(context, text, position, alignment):
+    """
+    Calculates position of text placement for
+    different alignments.
+    """
     extents = context.text_extents(text)
     text_width = extents.width
     text_height = extents.height
     
-    x = position[0] - 1 # adjustment as it seemed to place it one pixel to the right (maybe should use -2)
+    x = position[0] - 1 # adjustment as it seemed to place it one pixel to the right (maybe should use -2?)
     if alignment[0] == 'm':
         x -= text_width / 2
     elif alignment[0] == 'r':
@@ -121,24 +69,30 @@ def calculate_position(context, text, position, alignment):
 
     return x, y
 
-def calculate_two_positions(context, text1, text2, position):
+def calculate_multiple_positions(context, text, position, alignment):
+    """
+    Calculated the proper positions for each piece of text
+    if there are multiple different pieces.
+    """
+
     space_width = 15 # looks nice
 
-    text = f"{text1}{text2}"
-    extents = context.text_extents(text)
-    total_text_width = extents.width + space_width
-    total_text_height = extents.height
+    extents = [context.text_extents(str(i)) for i in text]
+    widths = [i.width for i in extents]
+    total_text_width = sum(widths) + space_width
 
-    extents = context.text_extents(text1)
-    text1_width = extents.width
-
-    #space_width = 10.564 # calculated lol, only works for one size!!!!
     #center align
-    middle_y = position[1]
-    middle_y += total_text_height / 2
+    middle_y = position[1] + extents[0].height / 2
 
-    return (position[0] - total_text_width/2, middle_y), (position[0] - total_text_width/2 + text1_width + space_width, middle_y)
-
+    x = []
+    if alignment[0] == 'm':
+        for i in range(len(text)):
+            x.append(position[0] - total_text_width/2 + i*(widths[0] + space_width))
+    elif alignment[0] == 'l':
+        for i in range(len(text)):
+            x.append(position[0] + i*(widths[0] + space_width))
+    
+    return [(xi, middle_y) for xi in x]
 
 # Function to add multiple pieces of text with Cairo
 def text(text_elements):
@@ -150,61 +104,72 @@ def text(text_elements):
     for text_info in text_elements:
         add_text_element(text_info, context)
 
-    return cairo_surface
+    return cairo_surface'''
 
 def create_stats_card(stats):
-    kills_needed, deaths_to_avoid = calculate_kdr_changes(int(stats['kills'].replace(",","")), int(stats['deaths'].replace(",","")))
-    # Define the text elements to add (text, position, color)
-    try:
-        if stats["steam"]:
-            username_color = (245/255,179/255,62/255)
-    except:
-        username_color = (1,1,1)
-    text_elements = [
+    """
+    Main function to write info to stats card
+    """
+
+    kills_needed, deaths_to_avoid = functions.calculate_kdr_changes(int(stats['kills'].replace(",","")), int(stats['deaths'].replace(",","")))
+
+    username_color = (245/255,179/255,62/255) if stats.get("steam") else (1,1,1)
+
+    STAT_COLOR = (1,1,1)
+    PERCENTILE_COLOR = (0.75,0.75,0.75)
+
+    STAT_SIZE = 41
+    SUPPORTING_TEXT_SIZE = 34
+    text_elements = [ # Adding each individual piece of text
         # NAME
-        (BOLD, [stats["squad"], stats["nick"]], (1140, RIGHT_Y_POSITION + 225), [(156/255, 156/255, 248/255), username_color], 38, "mm"),
-        (THIN, time_since_last_seen(stats["time"]), (1140, RIGHT_Y_POSITION + 263), (1, 1, 1), 38, "mm"),
+        #(BOLD, [stats["squad"], f"{stats["nick"]}"], (1140, RIGHT_Y_POSITION + 225), [(156/255, 156/255, 248/255), username_color], 38, "mm"),
+        (BOLD, [stats["squad"], f"{stats['nick']}"], (1140, RIGHT_Y_POSITION + 190), [(156/255, 156/255, 248/255), username_color], 38, "mm"),
+        (THIN, ["Created:", functions.uid_to_creation_date(stats["uid"])], (1140, RIGHT_Y_POSITION + 228), [PERCENTILE_COLOR, (1,1,1)], 30, "mm"),
+        (THIN, functions.time_since_last_seen(stats["time"]), (1140, RIGHT_Y_POSITION + 260), STAT_COLOR, 38, "mm"), # old_y = 263
         # KDR
-        (BOLD, str(round(float(stats['kills / death']), 1)), (LEFT_TEXT, RIGHT_Y_POSITION + 323 + 45), (1, 1, 1), 41, "lm"),
-        (THIN, "Top ??%", (RIGHT_TEXT, RIGHT_Y_POSITION + 323), (0.75, 0.75, 0.75), 30, "rm"),
-        (THIN, f"{kills_needed} kills to advance", (LEFT_TEXT, RIGHT_Y_POSITION + 323 + 90), (1, 1, 1), 38, "lm"),
-        (THIN, f"{deaths_to_avoid} deaths to avoid", (LEFT_TEXT, RIGHT_Y_POSITION + 323 + 128), (1, 1, 1), 38, "lm"),
+        (BOLD, str(round(float(stats['kills / death']), 1)), (LEFT_TEXT, RIGHT_Y_POSITION + 323 + 45), STAT_COLOR, STAT_SIZE, "lm"),
+        (THIN, "Top ??%", (RIGHT_TEXT, RIGHT_Y_POSITION + 323), PERCENTILE_COLOR, 30, "rm"),
+        #(THIN, f"{kills_needed} kills to advance", (LEFT_TEXT, RIGHT_Y_POSITION + 323 + 85), PERCENTILE_COLOR, SUPPORTING_TEXT_SIZE, "lm"),
+        (THIN, [kills_needed, "kills to advance"], (LEFT_TEXT, RIGHT_Y_POSITION + 323 + 85), [(0,1,0), PERCENTILE_COLOR], SUPPORTING_TEXT_SIZE, "lm"),
+        (THIN, [deaths_to_avoid, "deaths to avoid"], (LEFT_TEXT, RIGHT_Y_POSITION + 323 + 118), [(1,60/250,60/250), PERCENTILE_COLOR], SUPPORTING_TEXT_SIZE, "lm"),
+        #(THIN, f"{deaths_to_avoid} deaths to avoid", (LEFT_TEXT, RIGHT_Y_POSITION + 323 + 118), PERCENTILE_COLOR, SUPPORTING_TEXT_SIZE, "lm"),
         # KPM
         #(THIN, "Kills / Min", (LEFT_TEXT, RIGHT_Y_POSITION + 509), (1, 1, 1), 38, "lm"),
-        (BOLD, str(round(float(stats['kills / min']), 1)), (LEFT_TEXT, RIGHT_Y_POSITION + 509 + 45), (1, 1, 1), 41, "lm"),
-        (THIN, "Top ??%", (RIGHT_TEXT, RIGHT_Y_POSITION + 509), (0.75, 0.75, 0.75), 30, "rm"),
+        (BOLD, str(round(float(stats['kills / min']), 1)), (LEFT_TEXT, RIGHT_Y_POSITION + 509 + 45), (1, 1, 1), STAT_SIZE, "lm"),
+        (THIN, "Top ??%", (RIGHT_TEXT, RIGHT_Y_POSITION + 509), PERCENTILE_COLOR, 30, "rm"),
         # LEVEL
-        (BOLD, f"Level {stats['level']}", (LEFT_TEXT, RIGHT_Y_POSITION + 615), (1, 1, 1), 41, "lm"),
-        (THIN, f"Top {stats['xpPercentile']}%", (RIGHT_TEXT, RIGHT_Y_POSITION + 615), (1, 1, 1), 30, "rm"),
-        (THIN, f"{stats['progressPercentage']} to next level", (LEFT_TEXT, RIGHT_Y_POSITION + 615 + 38), (1, 1, 1), 38, "lm"),
-        (THIN, f"XP: {format_large_number(stats['xp'])}", (LEFT_TEXT, RIGHT_Y_POSITION + 615 + 75), (1, 1, 1), 38, "lm"),
+        (BOLD, f"Level {stats['level']}", (LEFT_TEXT, RIGHT_Y_POSITION + 615), (1, 1, 1), STAT_SIZE, "lm"),
+        (THIN, f"Top {stats['xpPercentile']}%", (RIGHT_TEXT, RIGHT_Y_POSITION + 615), PERCENTILE_COLOR, 30, "rm"),
+        #(THIN, f"{stats['progressPercentage']} to next level", (LEFT_TEXT, RIGHT_Y_POSITION + 615 + 39), PERCENTILE_COLOR, SUPPORTING_TEXT_SIZE, "lm"),
+        (THIN, [stats['progressPercentage'], "to next level"], (LEFT_TEXT, RIGHT_Y_POSITION + 615 + 39), [(1,1,1), PERCENTILE_COLOR], SUPPORTING_TEXT_SIZE, "lm"),
+        (THIN, ["XP:", functions.format_large_number(stats['xp'])], (LEFT_TEXT, RIGHT_Y_POSITION + 615 + 75), [PERCENTILE_COLOR, (1,1,1)], SUPPORTING_TEXT_SIZE, "lm"),
 
         # KILLS
-        #(THIN, "Kills:", (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION - 45), (1, 1, 1), 41, "lm"),
-        (BOLD, stats["kills"], (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION), (1, 1, 1), 41, "lm"),
-        (THIN, "Top ??%", (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 45), (0.75, 0.75, 0.75), 30, "lm"),
+        #(THIN, "Kills:", (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION - 45), (1, 1, 1), STAT_SIZE, "lm"),
+        (BOLD, stats["kills"], (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION), STAT_COLOR, STAT_SIZE, "lm"),
+        (THIN, "Top ??%", (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 45), PERCENTILE_COLOR, 30, "lm"),
         # DEATHS
-        #(THIN, "Deaths:", (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION - 45), (1, 1, 1), 41, "lm"),
-        (BOLD, stats["deaths"], (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION), (1, 1, 1), 41, "lm"),
-        (THIN, "Top ??%", (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 45), (0.75, 0.75, 0.75), 30, "lm"),
+        #(THIN, "Deaths:", (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION - 45), (1, 1, 1), STAT_SIZE, "lm"),
+        (BOLD, stats["deaths"], (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION), STAT_COLOR, STAT_SIZE, "lm"),
+        (THIN, "Top ??%", (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 45), PERCENTILE_COLOR, 30, "lm"),
         # KILLS
-        #(THIN, "Classic Wins:", (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + (SPACING + SIZE[1]) - 45), (1, 1, 1), 41, "lm"),
-        (BOLD, stats["classic mode wins"], (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + (SPACING + SIZE[1])), (1, 1, 1), 41, "lm"),
-        (THIN, "Top ??%", (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + (SPACING + SIZE[1]) + 45), (0.75, 0.75, 0.75), 30, "lm"),
+        #(THIN, "Classic Wins:", (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + (SPACING + SIZE[1]) - 45), (1, 1, 1), STAT_SIZE, "lm"),
+        (BOLD, stats["classic mode wins"], (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + (SPACING + SIZE[1])), STAT_COLOR, STAT_SIZE, "lm"),
+        (THIN, "Top ??%", (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + (SPACING + SIZE[1]) + 45), PERCENTILE_COLOR, 30, "lm"),
         # KILLS
-        #(THIN, "BR Wins:", (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + (SPACING + SIZE[1])- 45), (1, 1, 1), 41, "lm"),
-        (BOLD, stats["battle royale wins"], (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + (SPACING + SIZE[1])), (1, 1, 1), 41, "lm"),
-        (THIN, "Top ??%", (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + (SPACING + SIZE[1]) + 45), (0.75, 0.75, 0.75), 30, "lm"),
+        #(THIN, "BR Wins:", (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + (SPACING + SIZE[1])- 45), (1, 1, 1), STAT_SIZE, "lm"),
+        (BOLD, stats["battle royale wins"], (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + (SPACING + SIZE[1])), STAT_COLOR, STAT_SIZE, "lm"),
+        (THIN, "Top ??%", (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + (SPACING + SIZE[1]) + 45), PERCENTILE_COLOR, 30, "lm"),
         # KILLS
-        #(THIN, "Kills ELO", (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 2*(SPACING + SIZE[1]) - 45), (1, 1, 1), 41, "lm"),
-        (BOLD, stats["killsELO"], (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 2*(SPACING + SIZE[1])), (1, 1, 1), 41, "lm"),
-        (THIN, f"Top {stats["killsEloPercentile"]}%", (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 2*(SPACING + SIZE[1])+ 45), (0.75, 0.75, 0.75), 30, "lm"),
+        #(THIN, "Kills ELO", (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 2*(SPACING + SIZE[1]) - 45), (1, 1, 1), STAT_SIZE, "lm"),
+        (BOLD, stats["killsELO"], (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 2*(SPACING + SIZE[1])), STAT_COLOR, STAT_SIZE, "lm"),
+        (THIN, f"Top {stats['killsEloPercentile']}%", (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 2*(SPACING + SIZE[1])+ 45), PERCENTILE_COLOR, 30, "lm"),
         # KILLS
-        #(THIN, "Games ELO", (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 2*(SPACING + SIZE[1])- 45), (1, 1, 1), 41, "lm"),
-        (BOLD, stats["gamesELO"], (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 2*(SPACING + SIZE[1])), (1, 1, 1), 41, "lm"),
-        (THIN, f"Top {stats["gamesEloPercentile"]}%", (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 2*(SPACING + SIZE[1])+ 45), (0.75, 0.75, 0.75), 30, "lm"),
+        #(THIN, "Games ELO", (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 2*(SPACING + SIZE[1])- 45), (1, 1, 1), STAT_SIZE, "lm"),
+        (BOLD, stats["gamesELO"], (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 2*(SPACING + SIZE[1])), STAT_COLOR, STAT_SIZE, "lm"),
+        (THIN, f"Top {stats['gamesEloPercentile']}%", (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 2*(SPACING + SIZE[1])+ 45), PERCENTILE_COLOR, 30, "lm"),
     ]
 
-    surface = text(text_elements)
+    surface = cairo_functions.text(text_elements)
 
-    return convert_to_discord(surface)
+    return functions.convert_to_discord(surface)

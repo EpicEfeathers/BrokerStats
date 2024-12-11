@@ -48,12 +48,16 @@ async def fetch_all(uid):
         # Execute all requests concurrently
         api_stats, kills_elo, games_elo, xp_percentile, scraped_data = await asyncio.gather(*tasks)
         
+        deaths_per_weapon = api_stats["deaths"]
         # Process the results
         api_stats["killsEloPercentile"] = round(kills_elo, 1)
         api_stats["gamesEloPercentile"] = round(games_elo, 1)
         api_stats["xpPercentile"] = round(xp_percentile, 1)
 
         api_stats.update(scraped_data)
+        api_stats["kills"] = str(sum(api_stats["kills_per_weapon"].values()))
+        api_stats["deaths"] = str(sum(deaths_per_weapon.values()))
+        api_stats["kills / death"] = int(api_stats["kills"]) / int(api_stats["deaths"])
         
         return api_stats
     

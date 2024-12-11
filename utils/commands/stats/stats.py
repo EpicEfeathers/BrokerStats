@@ -1,7 +1,6 @@
 import discord
 from discord import app_commands
 import traceback
-import functions
 from utils.database_stuff.functions import fetch_uid
 from utils.commands.stats import get_user, user_image
 import aiohttp
