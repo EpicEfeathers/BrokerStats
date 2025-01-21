@@ -28,7 +28,7 @@ def convert_to_discord(surface):
     return image_stream
 
 def format_large_number(number):
-    return f"{number:,}"
+    return f"{int(number):,}"
 
 def get_random_background(folder_path):
     """
@@ -45,14 +45,14 @@ def get_random_background(folder_path):
     return image_path
 
 def uid_to_creation_date(uid):
-    """Takes account UID and output account creation date"""    
+    """Takes account UID and outputs account creation date"""    
     # The first 8 characters represent the timestamp
     timestamp = int(uid[:8], 16)
 
     # Convert the timestamp to a datetime object
     account_creation_date = datetime.fromtimestamp(timestamp, tz=timezone.utc)
 
-    formatted_date = account_creation_date.strftime("%m/%d/%Y")
+    formatted_date = account_creation_date.strftime("%b %-d, %Y") # %b = shortened month, %-d day without leading 0, %Y year
     
     days_ago = (datetime.now(timezone.utc) - account_creation_date).days
     return f"{formatted_date} ({days_ago} days ago)"

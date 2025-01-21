@@ -1,7 +1,7 @@
 import cairo
 from io import BytesIO
 
-from utils import functions
+from utils import functions, cairo_functions
 
 
 def format_large_number(number):
@@ -32,7 +32,7 @@ RIGHT = (840 - SIZE[1]) - SPACING
 LOGO_SIZE = (113,101)
 PROFILE_PIC_SIZE = (192, 192)
 
-def add_text_element(text_info, context):
+def add_squad_text_element(text_info, context):
     font_path, text, position, color, font_size, alignment = text_info  # Unpack text information
     if isinstance(font_path, list):
         context.select_font_face(font_path[0], cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
@@ -64,30 +64,27 @@ def add_text_element(text_info, context):
         context.show_text(str(text))
         context.fill()
 
-    # Draw a red "pixel" on top of the text at the specified position
-    context.set_source_rgba(1, 0, 0)  # Red color in RGBA format
-    pixel_size = 1  # A pixel-sized rectangle
-    context.rectangle(position[0], position[1], pixel_size, pixel_size)  # Adjust y to position the pixel above the text
-    context.fill()
-
 
 def calculate_position(context, text, position, alignment):
+    """
+    Calculates position of text placement for
+    different alignments.
+    """
     extents = context.text_extents(text)
     text_width = extents.width
     text_height = extents.height
-    x_bearing = extents.x_bearing
-    y_bearing = extents.y_bearing
-
-    x = position[0]
-    if alignment[0] == 'm':  # Center horizontally
-        x -= (text_width / 2 + x_bearing)
-    elif alignment[0] == 'r':  # Right-align
-        x -= (text_width + x_bearing)
+    
+    x = position[0] - 1 # adjustment as it seemed to place it one pixel to the right (maybe should use -2?)
+    if alignment[0] == 'm':
+        x -= text_width / 2
+    elif alignment[0] == 'r':
+        x -= text_width
 
     y = position[1]
-    if alignment[1] == 'm':  # Center vertically
+    if alignment[1] == 'm':
         y += text_height / 2
-        
+    elif alignment[1] == 'r':
+        y += text_height
 
     return x, y
 
@@ -96,7 +93,7 @@ def calculate_two_positions(context, text, position):
     space_width = 15 # looks nice
 
     extents = context.text_extents(text)
-    print(f"\"{text}\"", extents.width)
+    #print(f"\"{text}\"", extents.width)
     width = extents.width + space_width
 
     extents = context.text_extents(text)
@@ -116,7 +113,7 @@ def text(text_elements):
 
     # Loop through each text element and add it to the context
     for text_info in text_elements:
-        add_text_element(text_info, context)
+        add_squad_text_element(text_info, context)
 
     return cairo_surface
 
@@ -155,6 +152,6 @@ def create_stat_card(stats):
         (BOLD, stats["games_elo"], (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 25 + 2*(SPACING + SIZE[1])), (1, 1, 1), 41, "lm"),
     ]
 
-    surface = text(text_elements)
+    surface = cairo_functions.squad_text(text_elements)
 
     return convert_to_discord(surface)

@@ -9,6 +9,9 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../.
 
 async def squad_command(client, squad, interaction):
     if squad in client.squad_list:
+        if squad == "CAESAR":
+            await interaction.response.send_message("I'm sorry, but CAESAR does not currently work right now! With over 100 members, the way POMP's API is currently configured means too many requests. This should be resolved as soon as POMP has the free time to do it! Thanks for your patience :)")
+            return
         try:
             # getting info
             await interaction.response.send_message(content="<a:loading1:1295503606077980712>  Grabbing information... This could take a few seconds, so please be patient!")
