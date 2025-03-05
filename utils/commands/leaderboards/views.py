@@ -8,14 +8,26 @@ category = {"dailyOverall": {"Total Kills": "top0", "Classic Mode Wins": "top1"}
 TIMEOUT = 180
 
 class Dropdown(discord.ui.Select):
-    def __init__(self, category:list, num, type_:str, selected):
+    def __init__(self, user_id:int, category:list, num, type_:str, selected):
         items = list(category.items())
+        self.user_id = user_id
         self.type_ = type_
-        options = [discord.SelectOption(label=item_name, default=(item_name==selected)) for (item_name, item_id) in (items[(num-1)*PAGE_SIZE:num*PAGE_SIZE])] # sets correct item to selected, adds rest to dropdown
+
+        options = [ # sets correct item to selected, adds rest to dropdown
+            discord.SelectOption(
+                label=item_name,
+                #emoji="<hunting:1334224835882123359>",
+                default=(item_name==selected)) 
+            for (item_name, item_id) in (items[(num-1)*PAGE_SIZE:num*PAGE_SIZE])
+        ]
 
         super().__init__(min_values=1, max_values=1, options=options, row=1) # select min and max 1 value (only select one thing), custom options, row is 1
 
     async def callback(self, interaction: discord.Interaction):
+        if interaction.user.id != self.user_id:
+            await interaction.response.send_message("Hey! This is not your command!", ephemeral=True)
+            return
+        
         from utils.commands.leaderboards.daily import daily
         from utils.commands.leaderboards.lifetime import lifetime
 
@@ -27,33 +39,50 @@ class Dropdown(discord.ui.Select):
             "lifetimeOverall": lambda: lifetime.lifetime_overall,
             "lifetimeVehicleKills": lambda: lifetime.lifetime_vehicle_kills,
             "lifetimeWeaponKills": lambda: lifetime.lifetime_weapon_kills,
-            "lifetimeWeaponDamage": lambda: lifetime.lifetime_weapon_damage,
+            "lifetimeWeaponDamage": lambda:lifetime.lifetime_weapon_damage,
             "lifetimeLongestKills": lambda: lifetime.lifetime_longest_kills
         }
         
-        stat_card, view = await types[self.type_]()(self.values[0])
+        stat_card, view = await types[self.type_]()(self.user_id, self.values[0])
 
         await interaction.response.defer()
         await interaction.edit_original_response(content="", attachments=[stat_card], view=view)
 
 class Counter(discord.ui.View):
-    def __init__(self, type_:int, selected:str):
+    def __init__(self, user_id:int, type_:int, selected:str):
         super().__init__(timeout=TIMEOUT)
+        self.user_id = user_id
         self.category = category[type_]
         self.num = 1
         self.type_ = type_
 
-        self.dropdown = Dropdown(self.category, self.num, type_, selected)
+        self.dropdown = Dropdown(self.user_id, self.category, self.num, type_, selected)
         self.add_item(self.dropdown)
 
         self.right.disabled = len(self.category) <= 25
 
         self.response = None
 
-        button_mapping = {"dailyOverall": "daily?type=overall", "dailyWeaponKills": "daily?type=weaponKills", "dailyVehicleKills": "daily?type=vehicleKills", "dailyLongestWeaponKills": "daily?type=longestWeaponKills", "lifetimeOverall": "overall", "lifetimeWeaponKills": "killsPerWeapon", "lifetimeVehicleKills": "killsPerVehicle", "lifetimeWeaponDamage": "damageDealt", "lifetimeLongestKills": "longestKills"}
+        button_mapping = {
+            "dailyOverall": "daily?type=overall",
+            "dailyWeaponKills": "daily?type=weaponKills",
+            "dailyVehicleKills": "daily?type=vehicleKills",
+            "dailyLongestWeaponKills": "daily?type=longestWeaponKills",
+            "lifetimeOverall": "overall",
+            "lifetimeWeaponKills": "killsPerWeapon",
+            "lifetimeVehicleKills": "killsPerVehicle",
+            "lifetimeWeaponDamage": "damageDealt",
+            "lifetimeLongestKills": "longestKills",
+        }        
         self.add_item(discord.ui.Button(label='Stats page', url=f"https://stats.warbrokers.io/top/{button_mapping[self.type_]}"))
         #self.add_item(discord.ui.Button(label='POMPS\'s stats', url=f"https://stats.wbpjs.com/players/{uid}")) Not available yet
         self.add_item(discord.ui.Button(label='Support server', url="https://discord.gg/8r52JxkJez"))
+
+    async def ensure_user(self, interaction):
+        if interaction.user.id != self.user_id:
+            await interaction.response.send_message("Hey! This is not your command!", ephemeral=True)
+            return True
+        return False
 
 
     async def on_timeout(self) -> None:
@@ -73,6 +102,8 @@ class Counter(discord.ui.View):
 
     @discord.ui.button(emoji="<:left_arrow:1301174573051416618>", style=discord.ButtonStyle.blurple, row=2, disabled=True)
     async def left(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if await self.ensure_user(interaction): # checks if proper user is interacting
+            return
         if self.num > 1:
             self.num -=1
 
@@ -81,12 +112,16 @@ class Counter(discord.ui.View):
     # right button
     @discord.ui.button(emoji="<:right_arrow:1301174594581037088>", style=discord.ButtonStyle.blurple, row=2)
     async def right(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if await self.ensure_user(interaction): # checks if proper user is interacting
+            return
         if self.num < math.ceil(len(self.category)/25):
             self.num +=1
 
         await self.update(interaction)
 
     async def update(self, interaction):
+        if await self.ensure_user(interaction): # checks if proper user is interacting
+            return
         user_items = list(self.category.items())
         self.dropdown.options = [discord.SelectOption(label=item_name) for (item_name, item_id) in (user_items[(self.num-1)*PAGE_SIZE : self.num*PAGE_SIZE])]
 

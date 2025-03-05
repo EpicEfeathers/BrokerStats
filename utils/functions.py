@@ -5,6 +5,7 @@ import random
 
 from dateutil.relativedelta import relativedelta
 from io import BytesIO
+from matplotlib import pyplot
 
 def calculate_kdr_changes(kills, deaths):
     """
@@ -24,6 +25,14 @@ def convert_to_discord(surface):
     image_stream = BytesIO()
     surface.write_to_png(image_stream)  # Write to the BytesIO object
     image_stream.seek(0)
+
+    return image_stream
+
+def convert_plot_to_discord(plot):
+    """Converts plot to discord file"""
+    image_stream = BytesIO()
+    plot.savefig(image_stream, format='png', dpi=150)  # Save the plot to the BytesIO object
+    image_stream.seek(0)  # Rewind to the beginning of the buffer
 
     return image_stream
 

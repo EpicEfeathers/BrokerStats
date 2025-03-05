@@ -75,16 +75,17 @@ def calculate_position(context, text, position, alignment):
     return x, y
 
 
-def create_stats_card(data, category, img_path):
+def create_stats_card(data, category, subcategory, img_path):
     """
     Main function to write info to stats card
     """
 
-    if category == "Classic Mode Wins": # makes it fit on the screen
-        category = "Classic Wins"
+    if subcategory == "Classic Mode Wins": # makes it fit on the screen
+        subcategory = "Classic Wins"
 
     text_elements = [ # Adding each individual piece of text
-        (BOLD, category, (IMAGE_SIZE[0]/2, 130), (255, 255, 255), 32, "mm"),
+        (BOLD, category, (IMAGE_SIZE[0]/2, 56), (255, 255, 255), 45, "mm"),
+        (BOLD, subcategory, (IMAGE_SIZE[0]/2, 130), (255, 255, 255), 32, "mm"),
     ]
 
     old_rank = None

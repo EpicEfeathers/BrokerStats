@@ -2,6 +2,19 @@ import cairo
 
 from utils import functions
 
+def calculate_length(font_path, font_size, text):
+    temp_surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, 1000, 100)  # Temporary surface
+    context = cairo.Context(temp_surface)
+
+    context.select_font_face(font_path, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
+    context.set_font_size(font_size)
+
+    extents = context.text_extents(text)
+    text_width = extents.width
+
+    print(text_width)
+
+
 def add_stats_text_element(text_info, context):
     """
     Adds text element to image (way too complicated).
@@ -19,8 +32,8 @@ def add_stats_text_element(text_info, context):
         context.move_to(x, y)
         context.show_text(str(text))
 
-        context.set_source_rgba(1, 0, 0)  # Red pixel
-        context.rectangle(position[0], position[1], 1, 1)  # Define a 1x1 rectangle at (x, y)
+        #context.set_source_rgba(1, 0, 0)  # Red pixel
+        #context.rectangle(position[0], position[1], 1, 1)  # Define a 1x1 rectangle at (x, y)
         context.fill()
     else: # for multiple colors
         positions = calculate_multiple_positions(context, text, position, alignment) # calculated proper positions of different segments based on alignment

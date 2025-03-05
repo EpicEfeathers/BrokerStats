@@ -36,8 +36,6 @@ def create_stats_card(stats):
     SUPPORTING_TEXT_SIZE = 34
     text_elements = [ # Adding each individual piece of text
         # NAME
-        #(BOLD, [stats["squad"], f"{stats["nick"]}"], (1140, RIGHT_Y_POSITION + 225), [(156/255, 156/255, 248/255), username_color], 38, "mm"),
-        #(BOLD, [stats["squad"], f"{stats['nick']}"], (1140, RIGHT_Y_POSITION + 190), [(156/255, 156/255, 248/255), username_color], 38, "mm"),
         (THIN, ["Created:", functions.uid_to_creation_date(stats["uid"])], (1140, RIGHT_Y_POSITION + 228), [PERCENTILE_COLOR, (1,1,1)], 30, "mm"),
         (THIN, functions.time_since_last_seen(stats["time"]), (1140, RIGHT_Y_POSITION + 260), STAT_COLOR, 38, "mm"), # old_y = 263
         # KDR
@@ -83,8 +81,9 @@ def create_stats_card(stats):
         (BOLD, stats["gamesELO"], (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 2*(SPACING + SIZE[1])), STAT_COLOR, STAT_SIZE, "lm"),
         (THIN, f"Top {stats['gamesEloPercentile']}%", (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 2*(SPACING + SIZE[1])+ 45), PERCENTILE_COLOR, 30, "lm"),
     ]
-
-    if stats["squad"] != "":
+    # add name
+    if stats["squad"] != "": # if player part of squad
+        cairo_functions.calculate_length(BOLD, 38, f"{stats['squad']} {stats['nick']}")
         text_elements.append((BOLD, [stats["squad"], f"{stats['nick']}"], (1140, RIGHT_Y_POSITION + 190), [(156/255, 156/255, 248/255), username_color], 38, "mm"))
     else:
         text_elements.append((BOLD, f"{stats['nick']}", (1140, RIGHT_Y_POSITION + 190), username_color, 38, "mm"))

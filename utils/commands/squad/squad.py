@@ -24,7 +24,7 @@ async def squad_command(client, squad, interaction):
             stat_card = discord.File(fp=squad_image.create_stat_card(stats=stats), filename="stat_card.png")
 
             #adding view and sending message
-            view = menu_paginator.first_view(stats["users"], squad, 180)
+            view = menu_paginator.first_view(interaction.user.id, stats["users"], squad, 180)
             await interaction.edit_original_response(content="", attachments=[stat_card], view=view)
             view.response = await interaction.original_response()
         except Exception as e:

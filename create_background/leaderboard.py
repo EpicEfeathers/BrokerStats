@@ -36,7 +36,7 @@ def get_random_background(blur:bool):
 def title(im):
     Y_POSITION1 = 60
     functions.create_rounded_rectangle(image=im, size=(484, 80), corner_radius=25, color=(0,0,0,OPACITY), position=(IMAGE_SIZE[0]/2, Y_POSITION1))
-    functions.text_bold(im=im, text="Lifetime Leaderboard", color=(255, 255, 255), position=(IMAGE_SIZE[0]/2, Y_POSITION1-2), font_size=45, anchor="mm")
+    #functions.text_bold(im=im, text="Lifetime Leaderboard", color=(255, 255, 255), position=(IMAGE_SIZE[0]/2, Y_POSITION1-2), font_size=45, anchor="mm")
 
     Y_POSITION2 = 135
     functions.create_rounded_rectangle(image=im, size=(270, 55), corner_radius=15, color=(0,0,0,OPACITY), position=(IMAGE_SIZE[0]/2, Y_POSITION2))

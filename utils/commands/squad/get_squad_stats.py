@@ -106,14 +106,12 @@ async def fetch_squad_users(squad_stats):
         
         # Execute all requests concurrently
         api_stats = await asyncio.gather(*tasks)
-        #print(json.dumps(api_stats, sort_keys=True, indent=4))
 
         new_list = []
         for i in range(len(api_stats)):
             if i % 2 == 0:
                 api_stats[i+1]["time"] = api_stats[i]
                 new_list.append(api_stats[i+1])
-        #print(json.dumps(new_list, sort_keys=True, indent=4))
 
         return new_list
     

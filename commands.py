@@ -5,7 +5,6 @@ import traceback
 from urllib.parse import urlparse
 import datetime
 
-import functions
 from utils.database_stuff.functions import fetch_uid, link_user, reset_uid
 
 #from utils import menu_paginator
@@ -14,6 +13,8 @@ from utils.commands.stats import stats as stats_utils
 from utils.commands.leaderboards.daily import daily as daily_utils
 from utils.commands.leaderboards.lifetime import lifetime as lifetime_utils
 from utils.commands.broker_stats import get_stats as get_broker_stats
+from utils.commands.player_count import current_data, plot_player_count
+from utils.commands.maps import get_data, process_data
 
 
 def stats(bot):
@@ -104,18 +105,18 @@ def leaderboard(bot):
     )
     async def leaderboard(interaction: discord.Interaction, type:str, category: str):
         daily_categories = {
-            "Overall": lambda: daily_utils.daily_overall("Total Kills"),
-            "Weapon Kills (Round)": lambda: daily_utils.daily_weapon_kills("AR Rifle"),
-            "Vehicle Kills (Round)": lambda: daily_utils.daily_vehicle_kills("Tank LVL 1"),
-            "Longest Kills":  lambda: daily_utils.daily_longest_kills("AR Rifle")
+            "Overall": lambda: daily_utils.daily_overall(interaction.user.id, "Total Kills"),
+            "Weapon Kills (Round)": lambda: daily_utils.daily_weapon_kills(interaction.user.id, "AR Rifle"),
+            "Vehicle Kills (Round)": lambda: daily_utils.daily_vehicle_kills(interaction.user.id, "Tank LVL 1"),
+            "Longest Kills":  lambda: daily_utils.daily_longest_kills(interaction.user.id, "AR Rifle")
         }
 
         lifetime_categories = {
-            "Overall":  lambda: lifetime_utils.lifetime_overall("XP"),
-            "Weapon Kills":  lambda: lifetime_utils.lifetime_weapon_kills("AR Rifle"),
-            "Vehicle Kills":  lambda: lifetime_utils.lifetime_vehicle_kills("Tank LVL 1"),
-            "Weapon Damage":  lambda: lifetime_utils.lifetime_weapon_damage("AR Rifle"),
-            "Longest Kills":  lambda: lifetime_utils.lifetime_longest_kills("AR Rifle"),
+            "Overall":  lambda: lifetime_utils.lifetime_overall(interaction.user.id, "XP"),
+            "Weapon Kills":  lambda: lifetime_utils.lifetime_weapon_kills(interaction.user.id, "AR Rifle"),
+            "Vehicle Kills":  lambda: lifetime_utils.lifetime_vehicle_kills(interaction.user.id, "Tank LVL 1"),
+            "Weapon Damage":  lambda: lifetime_utils.lifetime_weapon_damage(interaction.user.id, "AR Rifle"),
+            "Longest Kills":  lambda: lifetime_utils.lifetime_longest_kills(interaction.user.id, "AR Rifle"),
         }
 
         category_map = daily_categories if type == "daily" else lifetime_categories
@@ -175,7 +176,13 @@ def help(bot):
         embed.add_field(name="</squad:1299897695854395453>", value=f":bar_chart: {squad.description}\nSee a detailed overview of a squad.", inline=False)
 
         leaderboard = bot.tree.get_command("leaderboard")
-        embed.add_field(name="</leaderboard:1322777263506329784> UPDATE THIS", value=f":medal: {leaderboard.description}\nSee top daily or lifetime leaderboards.", inline=False)
+        embed.add_field(name="</leaderboard:1331305581587337297>", value=f":medal: {leaderboard.description}\nSee top daily or lifetime leaderboards.", inline=False)
+
+        help = bot.tree.get_command("help")
+        embed.add_field(name="</help:1316396080359018598>", value=f":question: {help.description}\nDisplays this command.", inline=False)
+
+        broker_stats = bot.tree.get_command("broker_stats")
+        embed.add_field(name="</broker_stats:1331305581587337298>", value=f":1234: {broker_stats.description}\nReturns basic stats on the bot itself.", inline=False)
         
         await interaction.response.send_message(embed=embed)
 
@@ -191,7 +198,8 @@ def broker_stats(bot):
             f"**Total messages:** {stats['total_messages']}\n"
             f"**Total messages this year:** {stats['total_yearly_messages']}\n"
             f"**Total users:** {stats['total_users']}\n"
-            "**Created:** <t:1728326502:R>"
+            "**Created:** <t:1728326502:R>\n"
+            f"**Ping:** {round(bot.latency*1000)} ms" # 1000 ms in 1 s
         )
 
         if interaction.user.id == 747797252105306212:

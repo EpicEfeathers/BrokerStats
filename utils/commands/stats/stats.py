@@ -4,17 +4,18 @@ import traceback
 from utils.database_stuff.functions import fetch_uid
 from utils.commands.stats import get_user, user_image
 import aiohttp
-import requests
 
+TIMEOUT = 180
 
 class user_stats_view(discord.ui.View):
     """
     Buttons
     """
     def __init__(self, username:str, uid:str):
-        super().__init__()
+        super().__init__(timeout=TIMEOUT)
         self.username = username
         self.uid = uid
+        self.response = None
 
         self.add_item(discord.ui.Button(label='Stats page', url=f"https://stats.warbrokers.io/players/i/{uid}"))
         self.add_item(discord.ui.Button(label='POMPS\'s stats', url=f"https://stats.wbpjs.com/players/{uid}"))
@@ -23,6 +24,12 @@ class user_stats_view(discord.ui.View):
     @discord.ui.button(label='Copy UID', style=discord.ButtonStyle.primary)
     async def copy_uid(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_message(f'{self.username}\'s UID:```{self.uid}```', ephemeral=True)
+
+    async def on_timeout(self) -> None:
+        if self.response:
+            self.copy_uid.disabled = True
+
+            await self.response.edit(view=self)
 
 async def stats_command(interaction, uid, username, ephemeral:bool):
     """
@@ -53,11 +60,11 @@ async def stats_command(interaction, uid, username, ephemeral:bool):
         
         await interaction.edit_original_response(content="<a:loading1:1295503606077980712>  Creating stat card...")
         stat_card = discord.File(fp=user_image.create_stats_card(stats=stats), filename="stat_card.png")
-        #stat_card = user_image.create_stats_card(stats=stats)
 
         view = user_stats_view(stats["nick"], uid)
         await interaction.edit_original_response(content="", attachments=[stat_card], view=view)
-        await view.wait()
+        view.response = await interaction.original_response()
+        #await view.wait()
     except Exception:
         print(traceback.format_exc())
         await interaction.edit_original_response(content=f"\"{uid}\" is not a valid WarBrokers uid!")

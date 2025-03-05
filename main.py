@@ -4,7 +4,6 @@ import asyncio
 import discord
 from discord import app_commands
 from discord.ext import commands, tasks
-import requests
 
 import commands as my_commands
 from utils.monitor_pi import monitor_stats
@@ -19,14 +18,12 @@ SQUAD_LIST_URL = "https://wbapi.wbpjs.com/squad/getSquadList"
 
 # Mybot class
 class Mybot(commands.Bot):
-    def __init__(self, *, command_prefix: str, intents: discord.Intents, activity: discord.Activity):
-        super().__init__(command_prefix=command_prefix, intents=intents,activity=activity)
+    def __init__(self, *, intents: discord.Intents, activity: discord.Activity):
+        super().__init__(command_prefix="", intents=intents,activity=activity)
         #self.tree = app_commands.CommandTree(self)
         #self.squad_list
 
-    # In this basic example, we just synchronize the app commands to one guild.
-    # Instead of specifying a guild to every command, we copy over our global commands instead.
-    # By doing so, we don't have to wait up to an hour until they are shown to the end-user.
+    # sets commands to just the official server (so no 1 hour wait) CHANGE UPON RELEASE
     async def setup_hook(self):
         # This copies the global commands over to your guild.
         self.tree.copy_global_to(guild=MY_GUILD)
@@ -58,7 +55,7 @@ class Mybot(commands.Bot):
 
         print("Updated Pi Stats")
         
-bot = Mybot(command_prefix="s!",intents=intents,activity=activity)
+bot = Mybot(intents=intents,activity=activity)
 
 # When bot boots
 @bot.event
@@ -90,13 +87,10 @@ async def on_interaction(interaction: discord.Interaction):
         db_functions.add_message_to_uid(user_id)
 
 # error handling
-'''@bot.tree.error
+@bot.tree.error
 async def on_app_command_error(interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
-    if isinstance(error, discord.app_commands.CommandInvokeError):
-        print(f"\033[91m{error}\033[0m")
-        await interaction.response.send_message(":exclamation: An error occured while processing the request. If this error continues, please report it through the support server.", ephemeral=True)
-    else:
-        await interaction.response.send_message(f"An error occurred: {error}", ephemeral=True)'''
+    print(f"\033[91m{error}\033[0m")
+    await interaction.response.send_message(":exclamation: An error occured while processing the request. If this error continues, please report it through the support server. https://discord.gg/8r52JxkJez", ephemeral=True)
 
 # CHANGE SECRET ON RELEASE
 # HEY YOUUUUUUUU - CHANGELOG IN DISCORD + VERSION NUMBER :P
