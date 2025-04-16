@@ -55,7 +55,12 @@ async def fetch_all(uid):
         api_stats["xpPercentile"] = round(xp_percentile, 1)
 
         api_stats.update(scraped_data)
-        api_stats["kills"] = str(sum(api_stats["kills_per_vehicle"].values()))
+        kills_per_vehicle = api_stats.get("kills_per_vehicle") or {} # if value is null (if player has no kills) then return empty dict instead of breaking
+        kills_per_weapon = api_stats.get("kills_per_weapon") or {}
+        api_stats["kills"] = int(sum(value for key, value in kills_per_vehicle.items() if key != "v30"))
+        api_stats["kills"] += int(sum(kills_per_weapon.values()))
+        api_stats["kills"]
+
         api_stats["deaths"] = str(sum(deaths_per_weapon.values()))
         api_stats["kills / death"] = int(api_stats["kills"]) / int(api_stats["deaths"])
         

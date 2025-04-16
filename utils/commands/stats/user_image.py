@@ -25,7 +25,8 @@ def create_stats_card(stats):
     Main function to write info to stats card
     """
 
-    kills_needed, deaths_to_avoid = functions.calculate_kdr_changes(int(stats['kills'].replace(",","")), int(stats['deaths'].replace(",","")))
+    #kills_needed, deaths_to_avoid = functions.calculate_kdr_changes(int(stats['kills'].replace(",","")), int(stats['deaths'].replace(",","")))
+    kills_needed, deaths_to_avoid = functions.calculate_kdr_changes(stats['kills'], int(stats['deaths'].replace(",","")))
 
     username_color = (245/255,179/255,62/255) if stats.get("steam") else (1,1,1)
 

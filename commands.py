@@ -13,8 +13,13 @@ from utils.commands.stats import stats as stats_utils
 from utils.commands.leaderboards.daily import daily as daily_utils
 from utils.commands.leaderboards.lifetime import lifetime as lifetime_utils
 from utils.commands.broker_stats import get_stats as get_broker_stats
-from utils.commands.player_count import current_data, plot_player_count
+from utils.commands.player_count.current_player_count import plot_player_count, current_data
+from utils.commands.player_count.historical_playercount import plot_historical_player_count, fetch_historical_data
 from utils.commands.maps import get_data, process_data
+
+
+REGIONS = ['Worldwide', 'Asia', 'Australia', 'Europe', 'India', 'Japan', 'Russia', 'NA']
+SERVERS = ['Asia', 'Asia 4V4', 'Asia Clan', 'Australia Battle Royale', 'Australia Dead City', 'Australia', 'Australia Clan', 'Europe', 'Europe Clan', 'Europe 4V4', 'Europe Battle Royale', 'Europe Dead City', 'India', 'India Clan', 'Japan', 'Japan Clan', 'NA Battle Royale', 'NA Dead City', 'Russia', 'USA', 'USA 4V4', 'USA Clan', 'USA West', 'USA West Clan']
 
 
 def stats(bot):
@@ -214,3 +219,78 @@ def broker_stats(bot):
         else:
 
             await interaction.response.send_message(message)
+
+
+
+def player_count(bot):
+    @bot.tree.command(name="player_count", description="Gets current player count")
+    @app_commands.describe(type='region or server', category='...')
+    @app_commands.choices(
+        time=[
+            app_commands.Choice(name="Current", value="current"),
+            app_commands.Choice(name="Historical", value="historical")
+        ],
+        type=[
+            app_commands.Choice(name="Region", value="region"),
+            app_commands.Choice(name="Server", value="server")
+        ]
+    )
+    async def player_count(interaction: discord.Interaction, time: str, type: str, category: str):
+        if time == "current":
+            await interaction.response.send_message(content="<a:loading1:1295503606077980712>  Grabbing information...")
+            player_counts = current_data.get_data()
+
+            await interaction.edit_original_response(content="<a:loading1:1295503606077980712> Creating image...")
+            image = plot_player_count.return_image(player_counts)
+
+            await interaction.edit_original_response(content="", attachments=[discord.File(image, filename="player_count.png")])
+
+        else:    
+            if (type == "region" and category not in REGIONS) or (type == "server" and category not in SERVERS):
+                await interaction.response.send_message(content=f"`{category}` is not a valid category. Make sure to choose one of the options from the menu.", ephemeral=True)
+                return
+            await interaction.response.send_message(content="<a:loading1:1295503606077980712>  Grabbing information...")
+            player_count, timestamps, title = fetch_historical_data.get_data(category, type)
+
+            await interaction.edit_original_response(content="<a:loading1:1295503606077980712> Creating image...")
+            image = plot_historical_player_count.return_image(category, player_count, timestamps, title)
+
+            await interaction.edit_original_response(content="", attachments=[discord.File(image, filename="player_count.png")])
+
+    @player_count.autocomplete("category")
+    async def category_autocomplete(
+        interaction: discord.Interaction, current: str
+    ):
+        """
+        Leaderboard category autocomplete
+        """
+
+        selected_time = interaction.namespace.time
+        selected_type = interaction.namespace.type # either region or server
+
+        if selected_time == "current":
+            return []
+
+        if selected_type == "region":
+            categories = REGIONS
+        elif selected_type == "server":
+            categories = SERVERS
+
+        # Filter categories based on what user has inputted so far
+        return [
+            app_commands.Choice(name=category, value=category)
+            for category in categories if current.lower() in category.lower()
+        ]
+
+
+
+
+
+def mapper(bot):
+    @bot.tree.command(name="mapper", description="Maps by region")
+    async def mapper(interaction: discord.Interaction):
+        server_data = await get_data.fetch_all()
+
+        processed_data = process_data.process_server_data(server_data)
+
+        await interaction.response.send_message(processed_data)

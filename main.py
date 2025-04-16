@@ -79,6 +79,8 @@ my_commands.squad(bot)
 my_commands.leaderboard(bot)
 my_commands.help(bot)
 my_commands.broker_stats(bot)
+my_commands.player_count(bot)
+my_commands.mapper(bot)
 
 @bot.event
 async def on_interaction(interaction: discord.Interaction):
