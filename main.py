@@ -4,6 +4,7 @@ import asyncio
 import discord
 from discord import app_commands
 from discord.ext import commands, tasks
+import traceback
 
 import commands as my_commands
 from utils.monitor_pi import monitor_stats
@@ -81,6 +82,7 @@ my_commands.help(bot)
 my_commands.broker_stats(bot)
 my_commands.player_count(bot)
 my_commands.mapper(bot)
+my_commands.warbrokers(bot)
 
 @bot.event
 async def on_interaction(interaction: discord.Interaction):
@@ -92,6 +94,9 @@ async def on_interaction(interaction: discord.Interaction):
 @bot.tree.error
 async def on_app_command_error(interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
     print(f"\033[91m{error}\033[0m")
+
+    traceback.print_exception(type(error), error, error.__traceback__) # prints full traceback
+
     await interaction.response.send_message(":exclamation: An error occured while processing the request. If this error continues, please report it through the support server. https://discord.gg/8r52JxkJez", ephemeral=True)
 
 # CHANGE SECRET ON RELEASE

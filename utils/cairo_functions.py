@@ -12,10 +12,10 @@ def calculate_length(font_path, font_size, text):
     extents = context.text_extents(text)
     text_width = extents.width
 
-    print(text_width)
+    #print(text_width)
 
 
-def add_stats_text_element(text_info, context):
+'''def add_stats_text_element(text_info, context):
     """
     Adds text element to image (way too complicated).
     Can handle adding a single color, or multiple colors.
@@ -40,41 +40,42 @@ def add_stats_text_element(text_info, context):
     for i, position in enumerate(positions):
         context.set_source_rgb(*color[i])
         context.move_to(*position)
-        context.show_text(str(text[i]))
+        context.show_text(str(text[i]))'''
 
 
 def add_text_element(text_info, context):
     font_path, text, position, color, font_size, alignment = text_info  # Unpack text information
+    context.set_font_size(font_size)
 
-    # if there are two fonts specified (i.e. want a bold and then light font in the same line)
-    if isinstance(font_path, list):
-        context.select_font_face(font_path[0], cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
-        context.set_font_size(font_size)
-        context.set_source_rgba(*color)
-
+    if not isinstance(font_path, list) and not isinstance(text, list) or text[0] == "": # if font path is not a list (just one font)
+        positions = calculate_position(context, str(text), position, alignment)
+        font_path = [font_path]
+        text = [text]
+        color = [color]
+        positions = [positions]
+    elif isinstance(font_path, list): # if multiple fonts
         x_diff, y = calculate_two_positions(context, text[0], position)
+        positions = [(position[0], y), (position[0] + x_diff, y)]
+        color = [color for position in positions]
+    else: # if multiple pieces of text, same font
+        positions = calculate_multiple_positions(context, text, position, alignment) # calculated proper positions of different segments based on alignment
+        font_path = [font_path]
+
+    for i, position in enumerate(positions):
+        context.move_to(*position)
 
 
-        context.move_to(position[0], y)
-        context.show_text(str(text[0]))
-        context.fill()
+        if i < len(font_path):
+            context.select_font_face(font_path[i], cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
+        else:
+            context.select_font_face(font_path[-1], cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
 
-        context.select_font_face(font_path[1], cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
-        context.move_to(position[0] + x_diff, y)
-        context.show_text(str(text[1]))
-        context.fill()
-    else: # if normal (just one font)
-        context.select_font_face(font_path, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
-        context.set_font_size(font_size)
 
-        context.set_source_rgba(*color)
-        
+        context.set_source_rgb(*color[i])
+        context.show_text(str(text[i]))
 
-        x, y = calculate_position(context, str(text), position, alignment)
-        # Add the text
-        context.move_to(x, y)
-        context.show_text(str(text))
-        context.fill()
+    
+
 
 def calculate_position(context, text, position, alignment):
     """
@@ -140,7 +141,7 @@ def calculate_two_positions(context, text, position):
     return width, y
 
 # Function to add multiple pieces of text with Cairo
-def stats_text(text_elements):
+'''def stats_text(text_elements):
     image_path = functions.get_random_background("utils/commands/stats/backgrounds")
     cairo_surface = cairo.ImageSurface.create_from_png(image_path)
     context = cairo.Context(cairo_surface)
@@ -149,7 +150,7 @@ def stats_text(text_elements):
     for text_info in text_elements:
         add_stats_text_element(text_info, context)
 
-    return cairo_surface
+    return cairo_surface'''
 
 def daily_leaderboard_text(text_elements):
     image_path = functions.get_random_background("utils/commands/leaderboards/daily_weapon_kills/backgrounds")
@@ -158,19 +159,18 @@ def daily_leaderboard_text(text_elements):
 
     # Loop through each text element and add it to the context
     for text_info in text_elements:
-        add_stats_text_element(text_info, context)
+        add_text_element(text_info, context)
 
     return cairo_surface
 
 # add text to imag
-def add_text_to_image(text_elements, image_path):
-    image_path = functions.get_random_background("utils/commands/squad/backgrounds")
+def add_text_to_image(text_elements, image_folder_path):
+    image_path = functions.get_random_background(image_folder_path)
     cairo_surface = cairo.ImageSurface.create_from_png(image_path)
     context = cairo.Context(cairo_surface)
 
     # Loop through each text element and add it to the context
     for text_info in text_elements:
-        #add_squad_text_element(text_info, context)
         add_text_element(text_info, context)
 
     return cairo_surface

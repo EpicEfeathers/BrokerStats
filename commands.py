@@ -16,6 +16,7 @@ from utils.commands.broker_stats import get_stats as get_broker_stats
 from utils.commands.player_count.current_player_count import plot_player_count, current_data
 from utils.commands.player_count.historical_playercount import plot_historical_player_count, fetch_historical_data
 from utils.commands.maps import get_data, process_data
+from utils.commands.warbrokers import warbrokers as warbrokers_data, create_image as create_warbrokers_image
 
 
 REGIONS = ['Worldwide', 'Asia', 'Australia', 'Europe', 'India', 'Japan', 'Russia', 'NA']
@@ -292,5 +293,16 @@ def mapper(bot):
         server_data = await get_data.fetch_all()
 
         processed_data = process_data.process_server_data(server_data)
-
+        
         await interaction.response.send_message(processed_data)
+
+
+def warbrokers(bot):
+    @bot.tree.command(name="warbrokers", description="Game overview")
+    async def warbrokers(interaction: discord.Interaction):
+        server_data = warbrokers_data.return_warbrokers_stats()
+
+        stats_card = create_warbrokers_image.create_stats_card()
+
+        image = discord.File(fp=stats_card, filename='warbrokers.png')
+        await interaction.response.send_message("hola", file=image)
