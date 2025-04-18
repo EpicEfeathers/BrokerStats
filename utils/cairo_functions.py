@@ -85,6 +85,8 @@ def calculate_position(context, text, position, alignment):
     extents = context.text_extents(text)
     text_width = extents.width
     text_height = extents.height
+
+    text_height_without_below_line, descent, height, max_x_advance, max_y_advance = context.font_extents()
     
     x = position[0] - 1 # adjustment as it seemed to place it one pixel to the right (maybe should use -2?)
     if alignment[0] == 'm':
@@ -95,8 +97,8 @@ def calculate_position(context, text, position, alignment):
     y = position[1]
     if alignment[1] == 'm':
         y += text_height / 2
-    elif alignment[1] == 'r':
-        y += text_height
+    elif alignment[1] == 't':
+        y += text_height_without_below_line
 
     #print(str(text), text_width, x)
 
@@ -170,6 +172,17 @@ def add_text_to_image(text_elements, image_folder_path):
     context = cairo.Context(cairo_surface)
 
     # Loop through each text element and add it to the context
+    for text_info in text_elements:
+        add_text_element(text_info, context)
+
+    return cairo_surface
+
+def add_text_to_surface(cairo_surface, text_elements):
+    """
+    Used when already have a surface (not creating a new one)
+    """
+    context = cairo.Context(cairo_surface)
+
     for text_info in text_elements:
         add_text_element(text_info, context)
 
