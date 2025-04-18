@@ -16,7 +16,7 @@ from utils.commands.broker_stats import get_stats as get_broker_stats
 from utils.commands.player_count.current_player_count import plot_player_count, current_data
 from utils.commands.player_count.historical_playercount import plot_historical_player_count, fetch_historical_data
 from utils.commands.maps import get_data, process_data
-from utils.commands.warbrokers import warbrokers as warbrokers_data, create_image as create_warbrokers_image
+from utils.commands.warbrokers import fetch_data as warbrokers_data, create_image as create_warbrokers_image
 
 
 REGIONS = ['Worldwide', 'Asia', 'Australia', 'Europe', 'India', 'Japan', 'Russia', 'NA']
@@ -300,9 +300,10 @@ def mapper(bot):
 def warbrokers(bot):
     @bot.tree.command(name="warbrokers", description="Game overview")
     async def warbrokers(interaction: discord.Interaction):
-        server_data = warbrokers_data.return_warbrokers_stats()
+        await interaction.response.send_message(content="<a:loading1:1295503606077980712>  Grabbing information...")
+        total_playercount, playercount = warbrokers_data.fetch_data()
 
-        stats_card = create_warbrokers_image.create_stats_card()
+        await interaction.edit_original_response(content="<a:loading1:1295503606077980712> Creating image...")
+        stats_card = create_warbrokers_image.create_stats_card(total_playercount, playercount)
 
-        image = discord.File(fp=stats_card, filename='warbrokers.png')
-        await interaction.response.send_message("hola", file=image)
+        await interaction.edit_original_response(content="", attachments=[discord.File(stats_card, filename="warbrokers.png")])
