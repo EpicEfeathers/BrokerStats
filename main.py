@@ -83,6 +83,8 @@ my_commands.broker_stats(bot)
 my_commands.player_count(bot)
 my_commands.mapper(bot)
 my_commands.warbrokers(bot)
+my_commands.weapon_stats(bot)
+my_commands.trends(bot)
 
 @bot.event
 async def on_interaction(interaction: discord.Interaction):

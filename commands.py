@@ -18,6 +18,9 @@ from utils.commands.player_count.historical_playercount import plot_historical_p
 from utils.commands.maps import get_data, process_data
 from utils.commands.warbrokers import fetch_data as warbrokers_data, create_image as create_warbrokers_image
 
+from utils.commands.trends import daily_playercount_data, total_playercount_data, trends as trends_data
+
+
 
 REGIONS = ['Worldwide', 'Asia', 'Australia', 'Europe', 'India', 'Japan', 'Russia', 'NA']
 SERVERS = ['Asia', 'Asia 4V4', 'Asia Clan', 'Australia Battle Royale', 'Australia Dead City', 'Australia', 'Australia Clan', 'Europe', 'Europe Clan', 'Europe 4V4', 'Europe Battle Royale', 'Europe Dead City', 'India', 'India Clan', 'Japan', 'Japan Clan', 'NA Battle Royale', 'NA Dead City', 'Russia', 'USA', 'USA 4V4', 'USA Clan', 'USA West', 'USA West Clan']
@@ -307,3 +310,73 @@ def warbrokers(bot):
         stats_card = create_warbrokers_image.create_stats_card(total_playercount, playercount)
 
         await interaction.edit_original_response(content="", attachments=[discord.File(stats_card, filename="warbrokers.png")])
+
+
+
+def weapon_stats(bot):
+    @bot.tree.command(name="weapon_stats", description="Show your stats for each weapon")
+    async def weapon_stats(interaction: discord.Interaction):
+        thing = '''```ansi
+                   Kills     Longest     Accuracy     Damage Dealt
+    
+.50                   93                                     20340
+AK                  2177                                    123548
+AK SMG               109                                      5254
+AR                  3252                                    172333
+Air Strike           165                                     28865
+Auto Pistol           34                                      4784
+Auto Sniper          484                                     67702
+BGM                  244                                    189881
+Butterfly              0                                         0
+Chainsaw               1                                       600
+Concussion             6                                      4951
+Crossbow             191                                     34500
+Desert                 2                                      1077
+Fists                  1                                       120
+G3A3                  98                                      5943
+GL                     0                                       330
+Grenade              355                                    192164
+Healing Pistol         0                                         0
+Homing                25                                     28792
+Hunting               23                                      3001
+Implosion              0                                      2400
+KBAR                   1                                       375
+Knife                111                                     35375
+LMG                   16                                      1273
+Laser Trip Mine        1                                       959
+MG Turret             19                                       239
+Mace                   0                                         0
+Minigun                2                                       406
+Pistol               101                                      7945
+RPG                  144                                     75395
+Revolver             516                                     80886
+Rubber Chicken       543                                    153000
+SCAR                  54                                      3156
+SMG                 5414                                    254251
+Shotgun              300                                     10822
+Smoke Grenade          0                                         0
+Sniper              6220                                   1166467
+Tac Shotty             3                                       280
+VEK                    1                                        37
+VSS                    8                                       173```
+'''
+        embed=discord.Embed(title="Embed title (required)", description=thing)
+        #await interaction.response.send_message(thing)
+
+        await interaction.response.send_message(embed=embed)
+
+def trends(bot):
+    @bot.tree.command(name="trends", description="Shows game trends")
+    async def trends(interaction: discord.Interaction):
+        await interaction.response.send_message(content="<a:loading1:1295503606077980712>  Grabbing information...")
+        daily_average = daily_playercount_data.get_avgs()
+        daily_average_diff = daily_average[0] - daily_average[1]
+
+        total_playercount = total_playercount_data.return_data()
+        total_playercount_diff = total_playercount[0] - total_playercount[1]
+
+        await interaction.edit_original_response(content="<a:loading1:1295503606077980712> Creating image...")
+
+        stats_card = trends_data.create_image(daily_average, daily_average_diff, total_playercount, total_playercount_diff)
+
+        await interaction.edit_original_response(content="", attachments=[discord.File(stats_card, filename="trends.png")])

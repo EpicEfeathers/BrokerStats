@@ -44,7 +44,12 @@ def calculate_length(font_path, font_size, text):
 
 
 def add_text_element(text_info, context):
-    font_path, text, position, color, font_size, alignment = text_info  # Unpack text information
+    try: # if space_width is passed
+        font_path, text, position, color, font_size, alignment, space_width = text_info  # Unpack text information.
+    except:
+        font_path, text, position, color, font_size, alignment = text_info  # Unpack text information.
+        space_width = 15 # default width
+
     context.set_font_size(font_size)
 
     if not isinstance(font_path, list) and not isinstance(text, list) or text[0] == "": # if font path is not a list (just one font)
@@ -58,7 +63,7 @@ def add_text_element(text_info, context):
         positions = [(position[0], y), (position[0] + x_diff, y)]
         color = [color for position in positions]
     else: # if multiple pieces of text, same font
-        positions = calculate_multiple_positions(context, text, position, alignment) # calculated proper positions of different segments based on alignment
+        positions = calculate_multiple_positions(context, text, position, alignment, space_width) # calculated proper positions of different segments based on alignment
         font_path = [font_path]
 
     for i, position in enumerate(positions):
@@ -104,13 +109,13 @@ def calculate_position(context, text, position, alignment):
 
     return x, y
 
-def calculate_multiple_positions(context, text, position, alignment):
+def calculate_multiple_positions(context, text, position, alignment, space_width):
     """
     Calculated the proper positions for each piece of text
     if there are multiple different pieces.
     """
 
-    space_width = 15 # looks nice
+    #space_width = 15 # looks nice
 
     extents = [context.text_extents(str(i)) for i in text]
     widths = [i.width for i in extents]

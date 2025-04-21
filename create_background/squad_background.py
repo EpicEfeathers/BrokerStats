@@ -3,7 +3,7 @@ import random
 
 import sys, os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-import functions
+#import functions
 
 OPACITY = 200
 LEFT_TEXT = 870

@@ -20,7 +20,7 @@ def create_stats_card(total_playercount, playercount):
     middle_w = SIZE[0] / 2
     text_elements = [ # Adding each individual piece of text
         # Total Players
-        (REGULAR, functions.format_large_number(total_playercount), (middle_w, 180), colours.white, 50, "mt"),
+        (REGULAR, total_playercount, (middle_w, 180), colours.white, 50, "mt"),
         
         # Online Players
         (REGULAR, playercount, (middle_w, 371), colours.white, 50, "mt"),
