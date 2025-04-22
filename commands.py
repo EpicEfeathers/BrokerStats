@@ -19,6 +19,7 @@ from utils.commands.maps import get_data, process_data
 from utils.commands.warbrokers import fetch_data as warbrokers_data, create_image as create_warbrokers_image
 
 from utils.commands.trends import daily_playercount_data, total_playercount_data, trends as trends_data
+from utils.commands.squad_last_seen import get_data as last_seen_data
 
 
 
@@ -365,9 +366,17 @@ VSS                    8                                       173```
 
         await interaction.response.send_message(embed=embed)
 
+
+
 def trends(bot):
     @bot.tree.command(name="trends", description="Shows game trends")
-    async def trends(interaction: discord.Interaction):
+    #@app_commands.describe(type='Option 1 or Option 2')
+    #@app_commands.choices(
+    #    type=[
+    #        app_commands.Choice(name="Daily", value="daily"),
+    #    ]
+    #)
+    async def trends(interaction: discord.Interaction):#, type:str):
         await interaction.response.send_message(content="<a:loading1:1295503606077980712>  Grabbing information...")
         daily_average = daily_playercount_data.get_avgs()
         daily_average_diff = daily_average[0] - daily_average[1]
@@ -380,3 +389,25 @@ def trends(bot):
         stats_card = trends_data.create_image(daily_average, daily_average_diff, total_playercount, total_playercount_diff)
 
         await interaction.edit_original_response(content="", attachments=[discord.File(stats_card, filename="trends.png")])
+
+
+def last_seen(bot):
+    @bot.tree.command(name="last_seen", description="Squad last seen")
+    @app_commands.describe(squad='Squad to search for')
+    async def last_seen(interaction: discord.Interaction, squad: str):
+        if squad in bot.squad_list:
+            await interaction.response.send_message(content="<a:loading1:1295503606077980712>  Grabbing information...")
+
+            uids = last_seen_data.get_squad_users(squad)
+            code_block = last_seen_data.create_code_block(uids)
+
+            await interaction.edit_original_response(content=code_block)
+        else:
+            await interaction.response.send_message(f"'{squad}' is not a valid squad.", ephemeral=True)
+
+    @last_seen.autocomplete('squad')
+    async def last_seen_autocomplete(interaction: discord.Interaction,current: str) -> List[app_commands.Choice[str]]:
+        return [
+            app_commands.Choice(name=squad, value=squad)
+            for squad in bot.squad_list if current.lower() in squad.lower()
+        ][:25]
