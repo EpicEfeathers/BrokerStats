@@ -19,7 +19,7 @@ from utils.commands.maps import get_data, process_data
 from utils.commands.warbrokers import fetch_data as warbrokers_data, create_image as create_warbrokers_image
 
 from utils.commands.trends import daily_playercount_data, total_playercount_data, trends as trends_data
-from utils.commands.squad_last_seen import get_data as last_seen_data
+from utils.commands.squad_last_seen import squad_last_seen
 
 
 
@@ -395,15 +395,7 @@ def last_seen(bot):
     @bot.tree.command(name="last_seen", description="Squad last seen")
     @app_commands.describe(squad='Squad to search for')
     async def last_seen(interaction: discord.Interaction, squad: str):
-        if squad in bot.squad_list:
-            await interaction.response.send_message(content="<a:loading1:1295503606077980712>  Grabbing information...")
-
-            uids = last_seen_data.get_squad_users(squad)
-            code_block = last_seen_data.create_code_block(uids)
-
-            await interaction.edit_original_response(content=code_block)
-        else:
-            await interaction.response.send_message(f"'{squad}' is not a valid squad.", ephemeral=True)
+        await squad_last_seen.squad_last_seen(bot, interaction, squad, page_num=1)
 
     @last_seen.autocomplete('squad')
     async def last_seen_autocomplete(interaction: discord.Interaction,current: str) -> List[app_commands.Choice[str]]:
