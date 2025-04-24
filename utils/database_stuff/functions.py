@@ -36,6 +36,10 @@ def link_user(user_id, wb_uid):
     """
     Links a WB uid to a Discord uid
     """
+    if requests.get(f"https://wbapi.wbpjs.com/players/getPlayer?uid={wb_uid}").ok:
+        pass
+    else:
+        raise UserNotFoundError
     
     conn = sqlite3.connect('utils/database_stuff/users.db')
     c = conn.cursor()
@@ -47,12 +51,12 @@ def link_user(user_id, wb_uid):
         # Update the potatoes count if the user exists
         c.execute("UPDATE users SET uid = ? WHERE user_id = ?", (wb_uid, user_id))
     else:
-        stats = requests.get(f"https://wbapi.wbpjs.com/players/getPlayer?uid={wb_uid}").json()
-        try:
-            stats["uid"]
-        except:
+        '''stats = requests.get(f"https://wbapi.wbpjs.com/players/getPlayer?uid={wb_uid}")
+        if stats.ok:
+            pass
+        else:
             raise UserNotFoundError
-        # Insert a new user with the potato count
+        # Insert a new user with the potato count'''
         c.execute("INSERT INTO users (user_id, uid) VALUES (?, ?)", (user_id, wb_uid))
 
     conn.commit()
