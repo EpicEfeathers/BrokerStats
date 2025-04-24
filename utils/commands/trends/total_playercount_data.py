@@ -14,12 +14,12 @@ async def get_playercount(session):
 
 async def return_data(session): # SPEED THIS UP
     start = time.time()
-    data = get_playercount()
+    data = await get_playercount(session)
     print(time.time() -start)
 
     start = time.time()
 
-    link = "https://wbapi.wbpjs.com/status/playerCoun"
+    link = "https://wbapi.wbpjs.com/status/playerCount"
     async with session.get(link) as resp:
         current = int(await resp.text())
     print(time.time() - start)

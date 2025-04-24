@@ -13,5 +13,5 @@ def convert_data(data):
 
 async def get_data(session):
     async with session.get("https://store1.warbrokers.io/301/get_player_list.php") as resp:
-        data = resp.text()
+        data = await resp.text()
     return convert_data(data)

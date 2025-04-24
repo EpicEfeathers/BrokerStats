@@ -305,7 +305,7 @@ def warbrokers(bot):
     @bot.tree.command(name="warbrokers", description="Game overview")
     async def warbrokers(interaction: discord.Interaction):
         await interaction.response.send_message(content="<a:loading1:1295503606077980712>  Grabbing information...")
-        total_playercount, playercount = warbrokers_data.fetch_data(bot.session)
+        total_playercount, playercount = await warbrokers_data.fetch_data(bot.session)
 
         await interaction.edit_original_response(content="<a:loading1:1295503606077980712> Creating image...")
         stats_card = create_warbrokers_image.create_stats_card(total_playercount, playercount)
@@ -381,7 +381,7 @@ def trends(bot):
         daily_average = daily_playercount_data.get_avgs()
         daily_average_diff = daily_average[0] - daily_average[1]
 
-        total_playercount = total_playercount_data.return_data()
+        total_playercount = await total_playercount_data.return_data(bot.session)
         total_playercount_diff = total_playercount[0] - total_playercount[1]
 
         await interaction.edit_original_response(content="<a:loading1:1295503606077980712> Creating image...")
