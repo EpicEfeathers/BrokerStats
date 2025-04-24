@@ -1,5 +1,3 @@
-import requests, pprint
-
 maps = {
 	0: 'Desert',
 	1: 'Northwest',

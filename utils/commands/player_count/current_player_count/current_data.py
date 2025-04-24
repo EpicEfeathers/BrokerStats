@@ -1,5 +1,3 @@
-import requests
-
 def convert_data(data):
     response = str(data.split(f",USA,")[1])
     response = f"USA,{response}" # removes the beginning value e.g. 26,USA,137.220.58.215... -> USA,137.220.58.215...
@@ -13,6 +11,7 @@ def convert_data(data):
 
     return data_sorted
 
-def get_data():
-    data = requests.get("https://store1.warbrokers.io/301/get_player_list.php").text
+async def get_data(session):
+    async with session.get("https://store1.warbrokers.io/301/get_player_list.php") as resp:
+        data = resp.text()
     return convert_data(data)

@@ -1,10 +1,10 @@
 # Discord imports
-import aiohttp
 import asyncio
 import discord
 from discord import app_commands
 from discord.ext import commands, tasks
 import traceback
+from aiohttp import ClientSession, ClientTimeout
 
 import commands as my_commands
 from utils.monitor_pi import monitor_stats
@@ -20,7 +20,8 @@ SQUAD_LIST_URL = "https://wbapi.wbpjs.com/squad/getSquadList"
 # Mybot class
 class Mybot(commands.Bot):
     def __init__(self, *, intents: discord.Intents, activity: discord.Activity):
-        super().__init__(command_prefix="", intents=intents,activity=activity)
+        super().__init__(command_prefix="", intents=intents, activity=activity)
+        self.session = None
         #self.tree = app_commands.CommandTree(self)
         #self.squad_list
 
@@ -30,19 +31,30 @@ class Mybot(commands.Bot):
         self.tree.copy_global_to(guild=MY_GUILD)
         await self.tree.sync(guild=MY_GUILD)
 
+        self.session = ClientSession() # setting here, as must be in async function
+
+
+    async def close(self): # override discord's base closing method (to close aiohttp session)
+        print("Shutting down...")
+
+        await super().close()  # need this! shuts down bot
+
+        await self.session.close() # closes aiohttp session
+
+
     @tasks.loop(hours=5.0)
     async def get_squads(self):
         url = "https://wbapi.wbpjs.com/squad/getSquadList"
 
-        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as session:
-            try:
-                async with session.get(url) as response:
-                    self.squad_list = await response.json()
-            except asyncio.TimeoutError:
-                print("Getting squad list timed out. Falling back to default list.")
-                self.squad_list = ['-HCM-', '-Rebel-', '.INJ', '@__@', '@_@', '^_^AURA', '<DEVILS>', '<KILL>', '$$$', '007', '00N', '4GE', '50.CAL', '9Ine', 'a-10s', 'ABC', 'ACE', 'ACES', 'ACWB', 'AHK', 'AI', 'ALASKA', 'Alex140', 'ALPHA', 'America', 'AOS', 'APEX', 'APG', 'APG-JR', 'Aplpha', 'ARRAKIS', 'Arrow', 'AURORA', 'AUS', 'AusNZ', 'AWM', 'B.I.G', 'B0NK', 'Babayaga', 'BATFISH', 'BEAST', 'BEKAS', 'Best', 'besteod', 'BETA', 'BLAST', 'BLOON', 'BoA', 'BOT', 'BROS', 'BTB', 'Bully', 'BUMS', 'Buster', 'CAESAR', 'CANADA', 'Castilla', 'CCS', 'Charcoal', 'Chicken', 'COA', 'CODENAME', 'Cometer', 'Corgi', 'CraZy', 'CRO', 'D.J', 'Delta', 'DELTA_1', 'DEUS', 'DEV', 'DEVIL', 'DEVILS', 'DIABLO', 'Doggy', 'DOOFIE', 'DUBOS', 'DUCK', 'DUST', 'DUTCH', 'Dynamic', 'Eagles', 'Eclipse', 'EDF', 'EDG8', 'EK', 'ELLAS', 'ENFORCE', 'EP3R', 'ESP', 'Exile', 'F.C.', 'FA', 'Falcons', 'FAM', 'FEMBOY', 'FIGHTER', 'FIGHTERS', 'FISH', 'FLAMES', 'FORCE', 'Friends', 'FROZEN', 'FSB', 'FTW', 'FUMBLE', 'FUNCTION', 'Fuse', 'Fussel', 'GBros', 'generals', 'Ghost', 'ghosts_', 'GIGN', 'GINGER', 'Gladiat', 'GLORY', 'GO_SBKN!', 'GOC', 'GSG-9', 'GUEST', 'Guests', 'H.M.S', 'HAKER', 'HAMMER', 'HAZARD', 'HellWall', 'HF', 'Homies', 'HOT', 'HP', 'HRD', 'HRT', 'HSG', 'Hunter', 'ICE', 'ICED', 'IHS', 'IMMORTAL', 'INJ.', 'INSANE', 'ISR', 'issam', 'Japan', 'JDM', 'JOJO', 'JUSTICE', 'K-12', 'K.B.9', 'K.I.A.', 'KA-52', 'KDR', 'killeres', 'Kinetic', 'Korea_', 'KSK', 'KVLT', 'LEG1ON', 'LEGENDS', 'LEGION', 'LEO', 'Lokivile', 'LONGSHOT', "LOR'D", 'Love', 'LP', 'M.E.G', 'MAFIA', 'Maun', 'MED', 'mexicans', 'MIB', 'MKVI', 'MONKAAA', 'MoW', 'MPP', 'MURICA', 'musters', 'MZR', 'nachos', 'NANDOS', 'neavy', 'NEPTUNE', 'NERDS', 'NEURO', 'NK-Zone', 'nomuhyun', 'NRA', 'NRG', 'Nucleus', 'NWP', 'NX-01', 'OBJECT', 'OMEGA', 'ORANGE', 'OTSG', 'OUTLAW', 'P.T.S.D', 'PAIN', 'PANZER', 'Patate', 'PCrewAUS', 'PENTEST', 'Phantom', 'PHP', 'Pingu', 'PLG', 'PMC', 'POG', 'PoIar', 'POKE', 'Polar', 'POW', 'Predator', 'PROBOIZ', 'PROTOGEN', 'PSE', 'RaB', 'RANGERS', 'RAT', 'Rawleak', 'REAL', 'Reaper', 'RedFlys', 'Relaxman', 'REX', 'RG4L', 'ROGUE', 'RoX', 'RPG', 'RU$', 'RUS', 'RWS', 'S.T', 'SAS', 'saveTF2', 'SAVIOR', 'Scorpio', 'SCREAM', 'Scythe', 'SEAL', 'SFMF', 'Shadow', 'SHD', 'SHERB', 'SHFT', 'SIGMA', 'Sine', 'SK', 'Skittles', 'Skynet', 'Slavs', 'SoH', 'SOLDERS', 'sorpox', 'SOSI', 'SpecOps', 'SPED', 'Spetsnaz', 'sq33427', 'sq93488', 'Squadles', 'SSR', 'STAR', 'State', 'strength', 'STRIKE', 'STRIKER', 'Summer', 'SupR', 'SVEN', 't_and_co', 'TACOS', 'Tank', 'TEA', 'TEK', 'tff', 'THAI', 'the_c.f.', 'THEBOYZ', 'TheEnd', 'Thunder', 'TLN', 'TopGun', 'TopHat', 'totati', 'TotNA', 'Toxic', 'Tradie', 'TRUCK', 'U.S.A', 'U.S.S', 'UMS', 'USA_TACO', 'USS', 'uwu<3', 'VANGAURD', 'Vertex', 'VEX', 'Vortex', 'vortexs', 'VVV', 'W.S', 'Waffles', 'WarBroke', 'Warzone', 'WBTeam', 'WCS', 'what', 'WoH', 'WOLF', 'Wolves', 'YOS']
+        #async with ClientSession(timeout=ClientTimeout(total=10)) as session:
+        try:
+            async with self.session.get(url, timeout=ClientTimeout(total=10)) as response:
+                self.squad_list = await response.json()
+        except asyncio.TimeoutError:
+            print("Getting squad list timed out. Falling back to default list.")
+            self.squad_list = ['-HCM-', '-Rebel-', '.INJ', '@__@', '@_@', '^_^AURA', '<DEVILS>', '<KILL>', '$$$', '007', '00N', '4GE', '50.CAL', '9Ine', 'a-10s', 'ABC', 'ACE', 'ACES', 'ACWB', 'AHK', 'AI', 'ALASKA', 'Alex140', 'ALPHA', 'America', 'AOS', 'APEX', 'APG', 'APG-JR', 'Aplpha', 'ARRAKIS', 'Arrow', 'AURORA', 'AUS', 'AusNZ', 'AWM', 'B.I.G', 'B0NK', 'Babayaga', 'BATFISH', 'BEAST', 'BEKAS', 'Best', 'besteod', 'BETA', 'BLAST', 'BLOON', 'BoA', 'BOT', 'BROS', 'BTB', 'Bully', 'BUMS', 'Buster', 'CAESAR', 'CANADA', 'Castilla', 'CCS', 'Charcoal', 'Chicken', 'COA', 'CODENAME', 'Cometer', 'Corgi', 'CraZy', 'CRO', 'D.J', 'Delta', 'DELTA_1', 'DEUS', 'DEV', 'DEVIL', 'DEVILS', 'DIABLO', 'Doggy', 'DOOFIE', 'DUBOS', 'DUCK', 'DUST', 'DUTCH', 'Dynamic', 'Eagles', 'Eclipse', 'EDF', 'EDG8', 'EK', 'ELLAS', 'ENFORCE', 'EP3R', 'ESP', 'Exile', 'F.C.', 'FA', 'Falcons', 'FAM', 'FEMBOY', 'FIGHTER', 'FIGHTERS', 'FISH', 'FLAMES', 'FORCE', 'Friends', 'FROZEN', 'FSB', 'FTW', 'FUMBLE', 'FUNCTION', 'Fuse', 'Fussel', 'GBros', 'generals', 'Ghost', 'ghosts_', 'GIGN', 'GINGER', 'Gladiat', 'GLORY', 'GO_SBKN!', 'GOC', 'GSG-9', 'GUEST', 'Guests', 'H.M.S', 'HAKER', 'HAMMER', 'HAZARD', 'HellWall', 'HF', 'Homies', 'HOT', 'HP', 'HRD', 'HRT', 'HSG', 'Hunter', 'ICE', 'ICED', 'IHS', 'IMMORTAL', 'INJ.', 'INSANE', 'ISR', 'issam', 'Japan', 'JDM', 'JOJO', 'JUSTICE', 'K-12', 'K.B.9', 'K.I.A.', 'KA-52', 'KDR', 'killeres', 'Kinetic', 'Korea_', 'KSK', 'KVLT', 'LEG1ON', 'LEGENDS', 'LEGION', 'LEO', 'Lokivile', 'LONGSHOT', "LOR'D", 'Love', 'LP', 'M.E.G', 'MAFIA', 'Maun', 'MED', 'mexicans', 'MIB', 'MKVI', 'MONKAAA', 'MoW', 'MPP', 'MURICA', 'musters', 'MZR', 'nachos', 'NANDOS', 'neavy', 'NEPTUNE', 'NERDS', 'NEURO', 'NK-Zone', 'nomuhyun', 'NRA', 'NRG', 'Nucleus', 'NWP', 'NX-01', 'OBJECT', 'OMEGA', 'ORANGE', 'OTSG', 'OUTLAW', 'P.T.S.D', 'PAIN', 'PANZER', 'Patate', 'PCrewAUS', 'PENTEST', 'Phantom', 'PHP', 'Pingu', 'PLG', 'PMC', 'POG', 'PoIar', 'POKE', 'Polar', 'POW', 'Predator', 'PROBOIZ', 'PROTOGEN', 'PSE', 'RaB', 'RANGERS', 'RAT', 'Rawleak', 'REAL', 'Reaper', 'RedFlys', 'Relaxman', 'REX', 'RG4L', 'ROGUE', 'RoX', 'RPG', 'RU$', 'RUS', 'RWS', 'S.T', 'SAS', 'saveTF2', 'SAVIOR', 'Scorpio', 'SCREAM', 'Scythe', 'SEAL', 'SFMF', 'Shadow', 'SHD', 'SHERB', 'SHFT', 'SIGMA', 'Sine', 'SK', 'Skittles', 'Skynet', 'Slavs', 'SoH', 'SOLDERS', 'sorpox', 'SOSI', 'SpecOps', 'SPED', 'Spetsnaz', 'sq33427', 'sq93488', 'Squadles', 'SSR', 'STAR', 'State', 'strength', 'STRIKE', 'STRIKER', 'Summer', 'SupR', 'SVEN', 't_and_co', 'TACOS', 'Tank', 'TEA', 'TEK', 'tff', 'THAI', 'the_c.f.', 'THEBOYZ', 'TheEnd', 'Thunder', 'TLN', 'TopGun', 'TopHat', 'totati', 'TotNA', 'Toxic', 'Tradie', 'TRUCK', 'U.S.A', 'U.S.S', 'UMS', 'USA_TACO', 'USS', 'uwu<3', 'VANGAURD', 'Vertex', 'VEX', 'Vortex', 'vortexs', 'VVV', 'W.S', 'Waffles', 'WarBroke', 'Warzone', 'WBTeam', 'WCS', 'what', 'WoH', 'WOLF', 'Wolves', 'YOS']
 
-    @tasks.loop(minutes=30)
+    '''@tasks.loop(minutes=30)
     async def update_pi_stats(self):
         message_id = 1304199817278259274  # Replace with the message ID you want to edit
         channel_id = 1304092651083141120  # Replace with the channel ID of the message
@@ -54,8 +66,9 @@ class Mybot(commands.Bot):
         file, embed = monitor_stats()
         await message.edit(embed=embed)
 
-        print("Updated Pi Stats")
-        
+        print("Updated Pi Stats")'''
+
+
 bot = Mybot(intents=intents,activity=activity)
 
 # When bot boots
@@ -63,7 +76,7 @@ bot = Mybot(intents=intents,activity=activity)
 async def on_ready():
     try:
         bot.get_squads.start()
-        bot.update_pi_stats.start()
+        #bot.update_pi_stats.start()
     except Exception as e: # if running already
         print(e)
         pass
@@ -100,7 +113,11 @@ async def on_app_command_error(interaction: discord.Interaction, error: discord.
 
     traceback.print_exception(type(error), error, error.__traceback__) # prints full traceback
 
-    await interaction.response.send_message(":exclamation: An error occured while processing the request. If this error continues, please report it through the support server. https://discord.gg/8r52JxkJez", ephemeral=True)
+    error_message = ":exclamation: An error occured while processing the request. If this error continues, please report it through the support server. https://discord.gg/8r52JxkJez"
+    if interaction.response.is_done(): # if the command has already been responded too
+        await interaction.followup.send(error_message)
+    else:
+        await interaction.response.send_message(error_message, ephemeral=True)
 
 # CHANGE SECRET ON RELEASE
 # HEY YOUUUUUUUU - CHANGELOG IN DISCORD + VERSION NUMBER :P

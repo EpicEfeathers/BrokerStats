@@ -3,15 +3,17 @@ import math
 
 PAGE_SIZE = 25
 
-category = {"dailyOverall": {"Total Kills": "top0", "Classic Mode Wins": "top1"}, "dailyWeaponKills": {"AR Rifle": "top0", "AK Rifle": "top1", "SCAR": "top2", "Sniper": "top3", ".50 Cal Sniper": "top4", "Hunting": "top5", "SMG": "top6", "VEK": "top7", "VSS": "top8", "Shotgun": "top9", "Tactical Shotgun": "top10", "Crossbow": "top11", "LMG": "top12", "Minigun": "top13", "Revolver": "top14", "Pistol": "top15", "Knife": "top16", "Rubber Chicken": "top17", "Grenade": "top18", "G. Launcher": "top19", "Laser Trip Mine": "top20", "RPG": "top21", "Air Strike": "top22", "BGM": "top23", "Homing": "top24", "MG Turret": "top25", "Fists": "top26"}, "dailyVehicleKills": {"Tank LVL 1": "top0", "Tank LVL 2": "top1", "Tank LVL 3": "top2", "Apc LVL 1": "top3", "Apc LVL 2": "top4", "Apc LVL 3": "top5", "Heli LVL 1": "top6", "Heli LVL 2": "top7", "Heli LVL 3": "top8", "Jet (1 Fin)": "top9", "Jet (2 Fin)": "top10"}, "dailyLongestWeaponKills": {"AR Rifle": "top0", "AK Rifle": "top1", "SCAR": "top2", "Sniper": "top3", ".50 Cal Sniper": "top4", "Hunting": "top5", "SMG": "top6", "VEK": "top7", "VSS": "top8", "Shotgun": "top9", "Tactical Shotgun": "top10", "Crossbow": "top11", "LMG": "top12", "Minigun": "top13", "Revolver": "top14", "Pistol": "top15", "Knife": "top16", "Rubber Chicken": "top17", "Grenade": "top18", "G. Launcher": "top19", "Laser Trip Mine": "top20", "RPG": "top21", "Air Strike": "top22", "BGM": "top23", "Homing": "top24", "MG Turret": "top25", "Fists": "top26"}, "lifetimeOverall": {"XP": "top0", "Total Kills": "top1", "BR Wins": "top2"}, "lifetimeWeaponKills": {"AR Rifle": "top0", "AK Rifle": "top1", "SCAR": "top2", "Sniper": "top3", ".50 Cal Sniper": "top4", "Hunting": "top5", "SMG": "top6", "VEK": "top7", "VSS": "top8", "Shotgun": "top9", "Tactical Shotgun": "top10", "Crossbow": "top11", "LMG": "top12", "Minigun": "top13", "Revolver": "top14", "Pistol": "top15", "Knife": "top16", "Rubber Chicken": "top17", "Grenade": "top18", "G. Launcher": "top19", "Laser Trip Mine": "top20", "RPG": "top21", "Air Strike": "top22", "BGM": "top23", "Homing": "top24", "MG Turret": "top25", "Fists": "top26"}, "lifetimeVehicleKills": {"Tank LVL 1": "top0", "Tank LVL 2": "top1", "Tank LVL 3": "top2", "Apc LVL 1": "top3", "Apc LVL 2": "top4", "Apc LVL 3": "top5", "Heli LVL 1": "top6", "Heli LVL 2": "top7", "Heli LVL 3": "top8", "Jet (1 Fin)": "top9", "Jet (2 Fin)": "top10"}, "lifetimeWeaponDamage": {"AR Rifle": "top0", "AK Rifle": "top1", "SCAR": "top2", "Sniper": "top3", ".50 Cal Sniper": "top4", "Hunting": "top5", "SMG": "top6", "VEK": "top7", "VSS": "top8", "Shotgun": "top9", "Tactical Shotgun": "top10", "Crossbow": "top11", "LMG": "top12", "Minigun": "top13", "Revolver": "top14", "Pistol": "top15", "Knife": "top16", "Rubber Chicken": "top17", "Grenade": "top18", "G. Launcher": "top19", "Laser Trip Mine": "top20", "RPG": "top21", "Air Strike": "top22", "BGM": "top23", "Homing": "top24", "MG Turret": "top25", "Fists": "top26"}, "lifetimeLongestKills": {"AR Rifle": "top0", "AK Rifle": "top1", "SCAR": "top2", "Sniper": "top3", ".50 Cal Sniper": "top4", "Hunting": "top5", "SMG": "top6", "VEK": "top7", "VSS": "top8", "Shotgun": "top9", "Tactical Shotgun": "top10", "Crossbow": "top11", "LMG": "top12", "Minigun": "top13", "Revolver": "top14", "Pistol": "top15", "Knife": "top16", "Rubber Chicken": "top17", "Grenade": "top18", "G. Launcher": "top19", "Laser Trip Mine": "top20", "RPG": "top21", "Air Strike": "top22", "BGM": "top23", "Homing": "top24", "MG Turret": "top25", "Fists": "top26"}}
+category = {"dailyOverall": {"Total Kills": "top0", "Classic Mode Wins": "top1"}, "dailyWeaponKills": {"AR Rifle": "top0", "AK Rifle": "top1", "SCAR": "top2", "Sniper": "top3", ".50 Cal Sniper": "top4", "Hunting": "top5", "SMG": "top6", "VEK": "top7", "VSS": "top8", "Shotgun": "top9", "Tactical Shotgun": "top10", "Crossbow": "top11", "LMG": "top12", "Minigun": "top13", "Revolver": "top14", "Pistol": "top15", "Knife": "top16", "Rubber Chicken": "top17", "Grenade": "top18", "G. Launcher": "top19", "Laser Trip Mine": "top20", "RPG": "top21", "Air Strike": "top22", "BGM": "top23", "Homing": "top24", "MG Turret": "top25", "Fists": "top26"}, "dailyVehicleKills": {"Tank LVL 1": "top0", "Tank LVL 2": "top1", "Tank LVL 3": "top2", "Apc LVL 1": "top3", "Apc LVL 2": "top4", "Apc LVL 3": "top5", "Heli LVL 1": "top6", "Heli LVL 2": "top7", "Heli LVL 3": "top8", "Jet (1 Fin)": "top9", "Jet (2 Fin)": "top10"}, "dailyLongestWeaponKills": {"AR Rifle": "top0", "AK Rifle": "top1", "SCAR": "top2", "Sniper": "top3", ".50 Cal Sniper": "top4", "Hunting": "top5", "SMG": "top6", "VEK": "top7", "VSS": "top8", "Shotgun": "top9", "Tactical Shotgun": "top10", "Crossbow": "top11", "LMG": "top12", "Minigun": "top13", "Revolver": "top14", "Pistol": "top15", "Knife": "top16", "Rubber Chicken": "top17", "Grenade": "top18", "G. Launcher": "top19", "Laser Trip Mine": "top20", "RPG": "top21", "Air Strike": "top22", "BGM": "top23", "Homing": "top24", "MG Turret": "top25", "Fists": "top26"}, "lifetimeOverall": {"XP": "top0", "Total Kills": "top1", "BR Wins": "top2"}, "lifetimeWeaponKills": {"AR Rifle": "top0", "AK Rifle": "top1", "SCAR": "top2", "Sniper": "top3", ".50 Cal Sniper": "top4", "Hunting": "top5", "SMG": "top6", "VEK": "top7", "VSS": "top8", "Shotgun": "top9", "Tactical Shotgun": "top10", "Crossbow": "top11", "LMG": "top12", "Minigun": "top13", "Revolver": "top14", "Pistol": "top15", "Knife": "top16", "Rubber Chicken": "top17", "Grenade": "top18", "G. Launcher": "top19", "Laser Trip Mine": "top20", "RPG": "top21", "Air Strike": "top22", "BGM": "top23", "Homing": "top24", "Fists": "top26"}, "lifetimeVehicleKills": {"Tank LVL 1": "top0", "Tank LVL 2": "top1", "Tank LVL 3": "top2", "Apc LVL 1": "top3", "Apc LVL 2": "top4", "Apc LVL 3": "top5", "Heli LVL 1": "top6", "Heli LVL 2": "top7", "Heli LVL 3": "top8", "Jet (1 Fin)": "top9", "Jet (2 Fin)": "top10"}, "lifetimeWeaponDamage": {"AR Rifle": "top0", "AK Rifle": "top1", "SCAR": "top2", "Sniper": "top3", ".50 Cal Sniper": "top4", "Hunting": "top5", "SMG": "top6", "VEK": "top7", "VSS": "top8", "Shotgun": "top9", "Tactical Shotgun": "top10", "Crossbow": "top11", "LMG": "top12", "Minigun": "top13", "Revolver": "top14", "Pistol": "top15", "Knife": "top16", "Rubber Chicken": "top17", "Grenade": "top18", "G. Launcher": "top19", "Laser Trip Mine": "top20", "RPG": "top21", "Air Strike": "top22", "BGM": "top23", "Homing": "top24", "Fists": "top26"}, "lifetimeLongestKills": {"AR Rifle": "top0", "AK Rifle": "top1", "SCAR": "top2", "Sniper": "top3", ".50 Cal Sniper": "top4", "Hunting": "top5", "SMG": "top6", "VEK": "top7", "VSS": "top8", "Shotgun": "top9", "Tactical Shotgun": "top10", "Crossbow": "top11", "LMG": "top12", "Minigun": "top13", "Revolver": "top14", "Pistol": "top15", "Knife": "top16", "Rubber Chicken": "top17", "Grenade": "top18", "G. Launcher": "top19", "Laser Trip Mine": "top20", "RPG": "top21", "Air Strike": "top22", "BGM": "top23", "Homing": "top24", "Fists": "top26"}}
 
 TIMEOUT = 180
 
 class Dropdown(discord.ui.Select):
-    def __init__(self, user_id:int, category:list, num, type_:str, selected):
+    def __init__(self, session, user_id:int, category:list, num, type_:str, selected):
         items = list(category.items())
         self.user_id = user_id
         self.type_ = type_
+
+        self.session = session # aiohttp session
 
         options = [ # sets correct item to selected, adds rest to dropdown
             discord.SelectOption(
@@ -43,20 +45,21 @@ class Dropdown(discord.ui.Select):
             "lifetimeLongestKills": lambda: lifetime.lifetime_longest_kills
         }
         
-        stat_card, view = await types[self.type_]()(self.user_id, self.values[0])
+        stat_card, view = await types[self.type_]()(self.session, self.user_id, self.values[0])
 
         await interaction.response.defer()
         await interaction.edit_original_response(content="", attachments=[stat_card], view=view)
 
 class Counter(discord.ui.View):
-    def __init__(self, user_id:int, type_:int, selected:str):
+    def __init__(self, session, user_id:int, type_:int, selected:str):
         super().__init__(timeout=TIMEOUT)
         self.user_id = user_id
         self.category = category[type_]
         self.num = 1
         self.type_ = type_
+        self.session = session # for aiohttp session
 
-        self.dropdown = Dropdown(self.user_id, self.category, self.num, type_, selected)
+        self.dropdown = Dropdown(session, self.user_id, self.category, self.num, type_, selected)
         self.add_item(self.dropdown)
 
         self.right.disabled = len(self.category) <= 25

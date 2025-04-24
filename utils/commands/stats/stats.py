@@ -31,7 +31,7 @@ class user_stats_view(discord.ui.View):
 
             await self.response.edit(view=self)
 
-async def stats_command(interaction, uid, username, ephemeral:bool):
+async def stats_command(interaction, session, uid, username, ephemeral:bool):
     """
     Check if input is valid
     """
@@ -53,7 +53,7 @@ async def stats_command(interaction, uid, username, ephemeral:bool):
     try:
         await interaction.response.send_message(content="<a:loading1:1295503606077980712>  Grabbing information...", ephemeral=ephemeral)
         try:
-            stats = await get_user.fetch_all(uid)
+            stats = await get_user.fetch_all(session, uid)
         except:
             await interaction.response.send_message(content="Uhoh... something went wrong. Please try again!", ephemeral=True)
 
@@ -67,7 +67,8 @@ async def stats_command(interaction, uid, username, ephemeral:bool):
         #await view.wait()
     except Exception:
         print(traceback.format_exc())
-        await interaction.edit_original_response(content=f"\"{uid}\" is not a valid WarBrokers uid!")
+        await interaction.edit_original_response(content=f"\"{uid}\" is not a valid WarBrokers uid!\n\n**Note:** sometimes uid's need to be loaded into the system. If you are 100% sure this is a real uid, please try again.")
+        #await interaction.edit_original_response(content=f"\"{uid}\" is not a valid WarBrokers uid!")
 
 
 async def get_autocomplete(query):

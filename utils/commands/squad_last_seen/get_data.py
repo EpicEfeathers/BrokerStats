@@ -1,11 +1,11 @@
-import requests, aiohttp
 from datetime import datetime, timezone
 from utils import functions
 
 import pyperclip
 
-def get_squad_users(squad: str):
-    users = requests.get(f"https://wbapi.wbpjs.com/squad/getSquadMembers?squadName={squad}").json()
+async def get_squad_users(session, squad: str):
+    async with session.get(f"https://wbapi.wbpjs.com/squad/getSquadMembers?squadName={squad}") as resp:
+        users = await resp.json()
 
     uids = [user["uid"] for user in users]
 
@@ -14,7 +14,6 @@ def get_squad_users(squad: str):
 async def get_user_data(session, uid):
     async with session.get(f"https://wbapi.wbpjs.com/players/getPlayer?uid={uid}") as resp:
         data = await resp.json()
-    #data = requests.get(f"https://wbapi.wbpjs.com/players/getPlayer?uid={uid}").json()
 
     username = data["nick"]
     time_last_seen = datetime.fromtimestamp(data["time"], tz=timezone.utc) # GMT timezone
@@ -26,11 +25,11 @@ async def get_user_data(session, uid):
     }
 
 
-async def get_all_data(uids):
+async def get_all_data(session, uids):
     users_data = []
-    async with aiohttp.ClientSession() as session:
-        for uid in uids:
-            users_data.append(await get_user_data(session, uid))
+
+    for uid in uids:
+        users_data.append(await get_user_data(session, uid))
 
     return users_data
 

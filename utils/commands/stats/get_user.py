@@ -1,4 +1,3 @@
-import requests
 from bs4 import BeautifulSoup
 import aiohttp
 import asyncio
@@ -28,40 +27,39 @@ async def scrape(session, uid):
 
         return player_stats
 
-async def fetch_all(uid):
-    async with aiohttp.ClientSession() as session:
-        # Prepare all the URLs
-        api_url = f"https://wbapi.wbpjs.com/players/getPlayer?uid={uid}"
-        kills_url = f"https://wbapi.wbpjs.com/players/percentile/killsElo?uid={uid}"
-        games_url = f"https://wbapi.wbpjs.com/players/percentile/gamesElo?uid={uid}"
-        xp_percentile_url = f"https://wbapi.wbpjs.com/players/percentile/xp?uid={uid}"
-        
-        # Gather all the requests
-        tasks = [
-            fetch(session, api_url),
-            fetch(session, kills_url),
-            fetch(session, games_url),
-            fetch(session, xp_percentile_url),
-            scrape(session, uid)
-        ]
-        
-        # Execute all requests concurrently
-        api_stats, kills_elo, games_elo, xp_percentile, scraped_data = await asyncio.gather(*tasks)
-        
-        deaths_per_weapon = api_stats["deaths"]
-        # Process the results
-        api_stats["killsEloPercentile"] = round(kills_elo, 1)
-        api_stats["gamesEloPercentile"] = round(games_elo, 1)
-        api_stats["xpPercentile"] = round(xp_percentile, 1)
+async def fetch_all(session, uid):
+    # Prepare all the URLs
+    api_url = f"https://wbapi.wbpjs.com/players/getPlayer?uid={uid}"
+    kills_url = f"https://wbapi.wbpjs.com/players/percentile/killsElo?uid={uid}"
+    games_url = f"https://wbapi.wbpjs.com/players/percentile/gamesElo?uid={uid}"
+    xp_percentile_url = f"https://wbapi.wbpjs.com/players/percentile/xp?uid={uid}"
+    
+    # Gather all the requests
+    tasks = [
+        fetch(session, api_url),
+        fetch(session, kills_url),
+        fetch(session, games_url),
+        fetch(session, xp_percentile_url),
+        scrape(session, uid)
+    ]
+    
+    # Execute all requests concurrently
+    api_stats, kills_elo, games_elo, xp_percentile, scraped_data = await asyncio.gather(*tasks)
+    
+    deaths_per_weapon = api_stats["deaths"]
+    # Process the results
+    api_stats["killsEloPercentile"] = round(kills_elo, 1)
+    api_stats["gamesEloPercentile"] = round(games_elo, 1)
+    api_stats["xpPercentile"] = round(xp_percentile, 1)
 
-        api_stats.update(scraped_data)
-        kills_per_vehicle = api_stats.get("kills_per_vehicle") or {} # if value is null (if player has no kills) then return empty dict instead of breaking
-        kills_per_weapon = api_stats.get("kills_per_weapon") or {}
-        api_stats["kills"] = int(sum(value for key, value in kills_per_vehicle.items() if key != "v30"))
-        api_stats["kills"] += int(sum(kills_per_weapon.values()))
-        api_stats["kills"]
+    api_stats.update(scraped_data)
+    kills_per_vehicle = api_stats.get("kills_per_vehicle") or {} # if value is null (if player has no kills) then return empty dict instead of breaking
+    kills_per_weapon = api_stats.get("kills_per_weapon") or {}
+    api_stats["kills"] = int(sum(value for key, value in kills_per_vehicle.items() if key != "v30"))
+    api_stats["kills"] += int(sum(kills_per_weapon.values()))
+    api_stats["kills"]
 
-        api_stats["deaths"] = str(sum(deaths_per_weapon.values()))
-        api_stats["kills / death"] = int(api_stats["kills"]) / int(api_stats["deaths"])
-        
-        return api_stats
+    api_stats["deaths"] = str(sum(deaths_per_weapon.values()))
+    api_stats["kills / death"] = int(api_stats["kills"]) / int(api_stats["deaths"])
+    
+    return api_stats

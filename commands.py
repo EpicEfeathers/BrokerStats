@@ -34,7 +34,7 @@ def stats(bot):
     @bot.tree.command(name="stats", description="Gets a user's stats")
     @app_commands.describe(uid='User\'s UID', username="In game nickname")
     async def stats(interaction: discord.Interaction, uid: Optional[str], username:Optional[str]):
-        await stats_utils.stats_command(interaction, uid, username, False)
+        await stats_utils.stats_command(interaction, bot.session, uid, username, False)
 
     @stats.autocomplete('username')
     async def stats_autocomplete(interaction: discord.Interaction, current: str) -> List[app_commands.Choice[str]]:
@@ -115,18 +115,18 @@ def leaderboard(bot):
     )
     async def leaderboard(interaction: discord.Interaction, type:str, category: str):
         daily_categories = {
-            "Overall": lambda: daily_utils.daily_overall(interaction.user.id, "Total Kills"),
-            "Weapon Kills (Round)": lambda: daily_utils.daily_weapon_kills(interaction.user.id, "AR Rifle"),
-            "Vehicle Kills (Round)": lambda: daily_utils.daily_vehicle_kills(interaction.user.id, "Tank LVL 1"),
-            "Longest Kills":  lambda: daily_utils.daily_longest_kills(interaction.user.id, "AR Rifle")
+            "Overall": lambda: daily_utils.daily_overall(bot.session, interaction.user.id, "Total Kills"),
+            "Weapon Kills (Round)": lambda: daily_utils.daily_weapon_kills(bot.session, interaction.user.id, "AR Rifle"),
+            "Vehicle Kills (Round)": lambda: daily_utils.daily_vehicle_kills(bot.session, interaction.user.id, "Tank LVL 1"),
+            "Longest Kills":  lambda: daily_utils.daily_longest_kills(bot.session, interaction.user.id, "AR Rifle")
         }
 
         lifetime_categories = {
-            "Overall":  lambda: lifetime_utils.lifetime_overall(interaction.user.id, "XP"),
-            "Weapon Kills":  lambda: lifetime_utils.lifetime_weapon_kills(interaction.user.id, "AR Rifle"),
-            "Vehicle Kills":  lambda: lifetime_utils.lifetime_vehicle_kills(interaction.user.id, "Tank LVL 1"),
-            "Weapon Damage":  lambda: lifetime_utils.lifetime_weapon_damage(interaction.user.id, "AR Rifle"),
-            "Longest Kills":  lambda: lifetime_utils.lifetime_longest_kills(interaction.user.id, "AR Rifle"),
+            "Overall":  lambda: lifetime_utils.lifetime_overall(bot.session, interaction.user.id, "XP"),
+            "Weapon Kills":  lambda: lifetime_utils.lifetime_weapon_kills(bot.session, interaction.user.id, "AR Rifle"),
+            "Vehicle Kills":  lambda: lifetime_utils.lifetime_vehicle_kills(bot.session, interaction.user.id, "Tank LVL 1"),
+            "Weapon Damage":  lambda: lifetime_utils.lifetime_weapon_damage(bot.session, interaction.user.id, "AR Rifle"),
+            "Longest Kills":  lambda: lifetime_utils.lifetime_longest_kills(bot.session, interaction.user.id, "AR Rifle"),
         }
 
         category_map = daily_categories if type == "daily" else lifetime_categories
@@ -305,7 +305,7 @@ def warbrokers(bot):
     @bot.tree.command(name="warbrokers", description="Game overview")
     async def warbrokers(interaction: discord.Interaction):
         await interaction.response.send_message(content="<a:loading1:1295503606077980712>  Grabbing information...")
-        total_playercount, playercount = warbrokers_data.fetch_data()
+        total_playercount, playercount = warbrokers_data.fetch_data(bot.session)
 
         await interaction.edit_original_response(content="<a:loading1:1295503606077980712> Creating image...")
         stats_card = create_warbrokers_image.create_stats_card(total_playercount, playercount)

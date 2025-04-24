@@ -1,5 +1,4 @@
 from utils import functions
-import requests
 from utils import cairo_functions
 
 THIN = "Helvetica Neue Light"
