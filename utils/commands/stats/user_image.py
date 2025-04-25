@@ -37,7 +37,7 @@ def create_stats_card(stats):
     SUPPORTING_TEXT_SIZE = 34
     text_elements = [ # Adding each individual piece of text
         # NAME
-        (BOLD, ["Created:", functions.uid_to_creation_date(stats["uid"])], (1140, RIGHT_Y_POSITION + 228), [PERCENTILE_COLOR, STAT_COLOR_WHITE], 30, "mm"),
+        (BOLD, ["Created:", functions.uid_to_creation_date(stats["uid"])], (1140, RIGHT_Y_POSITION + 233), [PERCENTILE_COLOR, STAT_COLOR_WHITE], 30, "mm"),
         #(THIN, functions.time_since_last_seen(stats["time"]), (1140, RIGHT_Y_POSITION + 260), STAT_COLOR, 38, "mm"), # old_y = 263
         # KDR
         (BOLD, str(round(float(stats['kills / death']), 1)), (LEFT_TEXT, RIGHT_Y_POSITION + 323 + 45), STAT_COLOR_WHITE, STAT_SIZE, "lm"),
@@ -92,9 +92,9 @@ def create_stats_card(stats):
     time_since_last_seen = functions.time_since_last_seen(stats["time"])
 
     if time_since_last_seen != "Online now":
-        text_elements.append((BOLD, ["Last seen", functions.time_since_last_seen(stats["time"])], (1140, RIGHT_Y_POSITION + 260), [PERCENTILE_COLOR, STAT_COLOR_WHITE], 38, "mm")), # old_y = 263)
+        text_elements.append((BOLD, ["Last seen", functions.time_since_last_seen(stats["time"])], (1140, RIGHT_Y_POSITION + 271), [PERCENTILE_COLOR, STAT_COLOR_WHITE], 38, "mm")), # old_y = 263)
     else:
-        text_elements.append((BOLD, functions.time_since_last_seen(stats["time"]), (1140, RIGHT_Y_POSITION + 260), STAT_COLOR_WHITE, 38, "mm")), # old_y = 263
+        text_elements.append((BOLD, functions.time_since_last_seen(stats["time"]), (1140, RIGHT_Y_POSITION + 271), STAT_COLOR_WHITE, 38, "mm")), # old_y = 263
 
     surface = cairo_functions.add_text_to_image(text_elements, "utils/commands/stats/backgrounds")
 
