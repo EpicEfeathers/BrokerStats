@@ -54,8 +54,8 @@ def create_stats_card(stats):
         (BOLD, f"Level {stats['level']}", (LEFT_TEXT, RIGHT_Y_POSITION + 615), (1, 1, 1), STAT_SIZE, "lm"),
         (THIN, f"Top {stats['xpPercentile']}%", (RIGHT_TEXT, RIGHT_Y_POSITION + 615), PERCENTILE_COLOR, 30, "rm"),
         #(THIN, f"{stats['progressPercentage']} to next level", (LEFT_TEXT, RIGHT_Y_POSITION + 615 + 39), PERCENTILE_COLOR, SUPPORTING_TEXT_SIZE, "lm"),
-        (BOLD, [stats['progressPercentage'], "to next level"], (LEFT_TEXT, RIGHT_Y_POSITION + 615 + 39), [STAT_COLOR_WHITE, PERCENTILE_COLOR], SUPPORTING_TEXT_SIZE, "lm"),
-        (BOLD, ["XP:", functions.format_large_number(stats['xp'])], (LEFT_TEXT, RIGHT_Y_POSITION + 615 + 75), [PERCENTILE_COLOR, STAT_COLOR_WHITE], SUPPORTING_TEXT_SIZE, "lm"),
+        (BOLD, ["Progress:", stats['progressPercentage']], (LEFT_TEXT, RIGHT_Y_POSITION + 615 + 39), [PERCENTILE_COLOR, STAT_COLOR_WHITE], SUPPORTING_TEXT_SIZE, "lm"),
+        (BOLD, ["XP:", functions.format_large_number(stats['xp'])], (LEFT_TEXT, RIGHT_Y_POSITION + 615 + 80), [PERCENTILE_COLOR, STAT_COLOR_WHITE], SUPPORTING_TEXT_SIZE, "lm"),
 
         # KILLS
         #(THIN, "Kills:", (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION - 45), (1, 1, 1), STAT_SIZE, "lm"),
