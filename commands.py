@@ -218,7 +218,7 @@ def broker_stats(bot):
             message = message.replace("**Total messages:**", f"**Guild UID's:** {guild_stats}\n**Total messages:**")
 
             users = stats['users']
-            message = message.replace(f"**Total users:** {stats['total_users']}\n", f"**Total users:** {stats['total_users']}{users}\n")
+            message = message.replace(f"**Total users:** {stats['total_users']}\n", f"**Total users:** {stats['total_users']}\n{users}\n")
             
             await interaction.response.send_message(message, ephemeral=True)
         else:

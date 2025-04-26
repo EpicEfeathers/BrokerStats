@@ -48,9 +48,9 @@ async def fetch_all(session, uid):
     
     deaths_per_weapon = api_stats["deaths"]
     # Process the results
-    api_stats["killsEloPercentile"] = round(kills_elo, 1)
-    api_stats["gamesEloPercentile"] = round(games_elo, 1)
-    api_stats["xpPercentile"] = round(xp_percentile, 1)
+    api_stats["killsEloPercentile"] = round((100 - kills_elo), 1) # top x% = (100 - percentile). E.g. 95th percentile = Top 5%
+    api_stats["gamesEloPercentile"] = round((100 - games_elo), 1) # top x% = (100 - percentile). E.g. 95th percentile = Top 5%
+    api_stats["xpPercentile"] = round((100 - xp_percentile), 1) # top x% = (100 - percentile). E.g. 95th percentile = Top 5%
 
     api_stats.update(scraped_data)
     kills_per_vehicle = api_stats.get("kills_per_vehicle") or {} # if value is null (if player has no kills) then return empty dict instead of breaking

@@ -31,11 +31,19 @@ class Dropdown(discord.ui.Select):
             option.default = (option.value == self.values[0])
 
         
-        data = get_data.sort_data(self.values[0], self.paginator_view.data)
+        data = get_data.sort_data(self.values[0], self.paginator_view.data) # get sorted data
+
+        self.paginator_view.data = data # update paginator view's data to be sorted correctly
+        self.paginator_view.page_num = 0 # reset page num so shows from beginning
+
+        # Refresh button states
+        self.paginator_view.left.disabled = True
+        self.paginator_view.right.disabled = (len(data) <= PAGE_SIZE)
+
+        # create code block
         code_block = get_data.create_code_block(data, start_index=self.paginator_view.page_num * PAGE_SIZE, end_index=self.paginator_view.page_num * PAGE_SIZE + PAGE_SIZE)
 
-        await interaction.response.defer()
-        await interaction.edit_original_response(content=code_block, view=self.paginator_view)
+        await interaction.response.edit_message(content=code_block, view=self.paginator_view)
 
 class Paginator(discord.ui.View):
     def __init__(self, user_id, data, timeout):
@@ -91,6 +99,7 @@ class Paginator(discord.ui.View):
         self.left.disabled = (self.page_num == 0)
         self.right.disabled = (self.page_num == math.ceil((len(self.data)/PAGE_SIZE)) - 1)
 
-        code_block = get_data.create_code_block(self.data, start_index=self.page_num * PAGE_SIZE, end_index=self.page_num * PAGE_SIZE + PAGE_SIZE)
 
-        await interaction.edit_original_response(content=code_block, view=self)
+        code_block = get_data.create_code_block(self.data, start_index=self.page_num * PAGE_SIZE, end_index=self.page_num * PAGE_SIZE + PAGE_SIZE)
+        print(self.page_num)
+        await interaction.response.edit_message(content=code_block, view=self)

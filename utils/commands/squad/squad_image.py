@@ -133,7 +133,7 @@ def create_stat_card(stats):
         (BOLD, str(round(float(stats['kpm']), 1)), (LEFT_TEXT, RIGHT_Y_POSITION + 500 + 45), STAT_COLOR_WHITE, 41, "lm"),
         # LEVEL
         (BOLD, f"{stats['level']}", (LEFT_TEXT, RIGHT_Y_POSITION + 600 + 45), STAT_COLOR_WHITE, 41, "lm"),
-        (BOLD, ["XP: ", format_large_number(stats['xp'])], (LEFT_TEXT, RIGHT_Y_POSITION + 615 + 75), [PERCENTILE_COLOR, STAT_COLOR_WHITE], 38, "lm"),
+        (BOLD, ["Total XP: ", format_large_number(stats['xp'])], (LEFT_TEXT, RIGHT_Y_POSITION + 615 + 75), [PERCENTILE_COLOR, STAT_COLOR_WHITE], 38, "lm"),
 
         # KILLS
         #(THIN, "Kills:", (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION - 45), STAT_COLOR_WHITE, 41, "lm"),
