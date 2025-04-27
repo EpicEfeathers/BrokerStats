@@ -21,6 +21,8 @@ from utils.commands.warbrokers import fetch_data as warbrokers_data, create_imag
 from utils.commands.trends import daily_playercount_data, total_playercount_data, trends as trends_data
 from utils.commands.squad_last_seen import squad_last_seen
 
+from utils.commands.help import help as help_command
+
 
 
 REGIONS = ['Worldwide', 'Asia', 'Australia', 'Europe', 'India', 'Japan', 'Russia', 'NA']
@@ -172,27 +174,7 @@ def leaderboard(bot):
 def help(bot):
     @bot.tree.command(name="help", description="Get help for Broker Stats")
     async def help(interaction: discord.Interaction):
-        embed=discord.Embed(title="**Help**", color=0xfa3b06, timestamp=datetime.datetime.now(datetime.timezone.utc))
-        embed.set_author(name="Broker Stats", icon_url='https://cdn.discordapp.com/attachments/1295439550356918423/1304897010847191131/bot_logo.png?ex=67310f8b&is=672fbe0b&hm=77add4dce4676937b9fc6142ae418f9d2c4dfc87f2dda632ebb68eaedd7442aa&')
-        embed.set_thumbnail(url='https://cdn.discordapp.com/attachments/1295439550356918423/1304897010847191131/bot_logo.png?ex=67310f8b&is=672fbe0b&hm=77add4dce4676937b9fc6142ae418f9d2c4dfc87f2dda632ebb68eaedd7442aa&')
-        
-        stats = bot.tree.get_command("stats")
-        embed.add_field(name="</stats:1295437878654144515>", value=f":chart_with_upwards_trend: {stats.description}\nLink your own stats using </linkstats:1296119982429831168>.", inline=False)
-        
-        linkstats = bot.tree.get_command("linkstats")
-        embed.add_field(name="</linkstats:1296119982429831168>", value=f":link: {linkstats.description}\nUse this command to link your stats page to the bot.", inline=False)
-        
-        squad = bot.tree.get_command("squad")
-        embed.add_field(name="</squad:1299897695854395453>", value=f":bar_chart: {squad.description}\nSee a detailed overview of a squad.", inline=False)
-
-        leaderboard = bot.tree.get_command("leaderboard")
-        embed.add_field(name="</leaderboard:1331305581587337297>", value=f":medal: {leaderboard.description}\nSee top daily or lifetime leaderboards.", inline=False)
-
-        help = bot.tree.get_command("help")
-        embed.add_field(name="</help:1316396080359018598>", value=f":question: {help.description}\nDisplays this command.", inline=False)
-
-        broker_stats = bot.tree.get_command("broker_stats")
-        embed.add_field(name="</broker_stats:1331305581587337298>", value=f":1234: {broker_stats.description}\nReturns basic stats on the bot itself.", inline=False)
+        embed = help_command.help(bot)
         
         await interaction.response.send_message(embed=embed)
 
