@@ -1,5 +1,6 @@
-import sys, os
+import sys, os, io
 import cairo
+from PIL import Image, ImageFilter
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -17,9 +18,18 @@ class colours:
     red = (1, 0, 0)
 
 def create_stats_card(file_path, file_name):
-    cairo_surface = cairo.ImageSurface.create_from_png(file_path)
+    # PIL: Open and blur the image
+    pil_image = Image.open(file_path)
+    blurred_pil = pil_image.filter(ImageFilter.GaussianBlur(radius=5.0))
 
-    ctx = cairo.Context(cairo_surface)
+    # Convert the blurred PIL image into a format Cairo can use
+    with io.BytesIO() as output:
+        blurred_pil.save(output, format="PNG")
+        output.seek(0)
+        cairo_surface = cairo.ImageSurface.create_from_png(output)
+
+        ctx = cairo.Context(cairo_surface)
+
     background_size = (SIZE[0]-100, SIZE[1]-100)
     ctx.set_source_rgba(0, 0, 0, 1)  # Fully opaque black
     draw_rounded_rectangle(ctx, (SIZE[0]-background_size[0])/2, (SIZE[1]-background_size[1])/2, background_size[0], background_size[1], 25)
