@@ -16,8 +16,8 @@ class colours:
     green = (0, 1, 0)
     red = (1, 0, 0)
 
-def create_stats_card():
-    cairo_surface = cairo.ImageSurface.create_from_png("tests/blurred_images/space_station.png")
+def create_stats_card(file_path, file_name):
+    cairo_surface = cairo.ImageSurface.create_from_png(file_path)
 
     ctx = cairo.Context(cairo_surface)
     background_size = (SIZE[0]-100, SIZE[1]-100)
@@ -56,7 +56,7 @@ def create_stats_card():
 
     surface = cairo_functions.add_text_to_surface(cairo_surface, text_elements)
 
-    surface.write_to_png("test.png")
+    surface.write_to_png(f"create_background/outputted_backgrounds/{file_name}")
 
 def draw_rounded_rectangle(ctx, x, y, width, height, radius):
     """Draws a rounded rectangle on the given cairo context."""
@@ -69,4 +69,8 @@ def draw_rounded_rectangle(ctx, x, y, width, height, radius):
     ctx.arc(x + radius, y + radius, radius, 180 * (3.14/180), 270 * (3.14/180))
     ctx.close_path()
 
-create_stats_card()
+folder_path = "create_background/backgrounds"
+for filename in os.listdir(folder_path):
+    if filename != ".DS_Store":
+        file_path = os.path.join(folder_path, filename)
+        create_stats_card(file_path, filename)

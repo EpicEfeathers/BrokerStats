@@ -1,9 +1,6 @@
 from PIL import Image, ImageDraw, ImageFilter
-import random
-
-import sys, os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-import functions
+import os
+import background_functions
 
 OPACITY = 175 # old = 200
 LEFT_TEXT = 870
@@ -20,16 +17,9 @@ RIGHT = (840 - SIZE[1]) - SPACING
 LOGO_SIZE = (85,85)
 PROFILE_PIC_SIZE = (192, 192)
 
-def get_random_background(blur:bool):
-    '''folder_path = "create_background/backgrounds"
-    png_files = [file for file in os.listdir(folder_path) if file.endswith('.png')]
-
-    image = random.choice(png_files)
-
-    image_path = os.path.join(folder_path, image)'''
-    image_path = "create_background/backgrounds/farm.png"
-    im = Image.open(image_path)
-    im = im.resize((1440,810), Image.LANCZOS)
+def get_background(path, blur:bool):
+    im = Image.open(path)
+    im = im.resize((1440, 810), Image.LANCZOS)
     if blur:
         im = im.filter(ImageFilter.GaussianBlur(radius=5.0))
     
@@ -70,9 +60,9 @@ def logo(im):
 
     logo = logo.resize(LOGO_SIZE, Image.LANCZOS).convert("RGBA")
 
-    functions.create_rounded_rectangle(image=im, size=(780,100), corner_radius=25, color=(0,0,0,OPACITY), position=(420, 79))
+    background_functions.create_rounded_rectangle(image=im, size=(780,100), corner_radius=25, color=(0,0,0,OPACITY), position=(420, 79))
     im.paste(logo, (55, int(79 - LOGO_SIZE[1]/2) + 2), logo)
-    functions.text_bold(im=im, text="Player Overview", color=(255, 255, 255), position=(LEFT - (SIZE[0]/2) + 125, 77), font_size=45, anchor="lm")
+    background_functions.text_bold(im=im, text="Player Overview", color=(255, 255, 255), position=(LEFT - (SIZE[0]/2) + 125, 77), font_size=45, anchor="lm")
 
 
 def profile_pic(im, profile_picture, wb_logo:bool):
@@ -97,19 +87,19 @@ def profile_pic(im, profile_picture, wb_logo:bool):
 def kdr(im):
     Y_POSITION = RIGHT_Y_POSITION + 323
     # description
-    functions.text_narrow(im, text="Kills / Death:", color=(255,255,255), position=(LEFT_TEXT,Y_POSITION), font_size=38, anchor="lm")
+    background_functions.text_narrow(im, text="Kills / Death:", color=(255,255,255), position=(LEFT_TEXT,Y_POSITION), font_size=38, anchor="lm")
 
 # all the kpm related text
 def kpm(im):
     Y_POSITION = RIGHT_Y_POSITION + 509
     # description
-    functions.text_narrow(im, text="Kills / Min:", color=(255,255,255), position=(LEFT_TEXT,Y_POSITION), font_size=38, anchor="lm")
+    background_functions.text_narrow(im, text="Kills / Min:", color=(255,255,255), position=(LEFT_TEXT,Y_POSITION), font_size=38, anchor="lm")
 
 # creates the card backgrounds on the image
 def create_backgrounds(im):
     for height in range(3):
-        functions.create_rounded_rectangle(image=im, size=SIZE, corner_radius=25, color=(0,0,0,OPACITY), position=(LEFT,TOP_Y_POSITION + height*(SPACING+SIZE[1])))
-        functions.create_rounded_rectangle(image=im, size=SIZE, corner_radius=25, color=(0,0,0,OPACITY), position=(RIGHT,TOP_Y_POSITION + height*(SPACING+SIZE[1])))
+        background_functions.create_rounded_rectangle(image=im, size=SIZE, corner_radius=25, color=(0,0,0,OPACITY), position=(LEFT,TOP_Y_POSITION + height*(SPACING+SIZE[1])))
+        background_functions.create_rounded_rectangle(image=im, size=SIZE, corner_radius=25, color=(0,0,0,OPACITY), position=(RIGHT,TOP_Y_POSITION + height*(SPACING+SIZE[1])))
 
 # the base function to create a card text on the image
 def create_card(im, category:str, column:int, row:int):
@@ -120,7 +110,7 @@ def create_card(im, category:str, column:int, row:int):
 
     y_pos = TOP_Y_POSITION + row*(SPACING + SIZE[1])
 
-    functions.text_narrow(im, text=f"{category}:", color=(255,255,255), position=(x_pos, y_pos - 45), font_size=36, anchor="lm")
+    background_functions.text_narrow(im, text=f"{category}:", color=(255,255,255), position=(x_pos, y_pos - 45), font_size=36, anchor="lm")
 
 def kill_card(im):
     create_card(im, "Kills", 0, 0)
@@ -141,8 +131,8 @@ def gamesELO(im):
     create_card(im, "Games ELO", 1, 2)
 
 
-def create_stat_card():
-    im = get_random_background(True)
+def create_stat_card(filepath, file_name):
+    im = get_background(filepath, True)
 
 
     logo(im)
@@ -162,6 +152,10 @@ def create_stat_card():
     killsELO(im)
     gamesELO(im)
 
-    im.show()
+    im.save(f"create_background/outputted_backgrounds/{file_name}")
 
-create_stat_card()
+folder_path = "create_background/backgrounds"
+for filename in os.listdir(folder_path):
+    if filename != ".DS_Store":
+        file_path = os.path.join(folder_path, filename)
+        create_stat_card(file_path, filename)
