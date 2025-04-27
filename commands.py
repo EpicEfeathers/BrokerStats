@@ -34,7 +34,7 @@ def stats(bot):
     Stats command
     """
     @bot.tree.command(name="stats", description="Gets a user's stats")
-    @app_commands.describe(uid='User\'s UID', username="In game nickname")
+    @app_commands.describe(uid='User\'s UID', username="User's in game nickname")
     async def stats(interaction: discord.Interaction, uid: Optional[str], username:Optional[str]):
         await stats_utils.stats_command(interaction, bot.session, uid, username, False)
 
@@ -48,7 +48,7 @@ def linkstats(bot):
     Linkstats command
     """
     @bot.tree.command(name="linkstats", description="Link your stats to your discord account.")
-    @app_commands.describe(link='Your stat\'s page link', uid='Your UID', username="In game nickname")
+    @app_commands.describe(link='Your stat\'s page link', uid='Your UID', username="Your in game nickname")
     async def linkstats(interaction: discord.Interaction, link: Optional[str], uid: Optional[str], username: Optional[str]):
         if username == "too_short":
             await interaction.response.send_message(f"You need to enter at least 2 characters to search!", ephemeral=True)
@@ -108,7 +108,7 @@ def leaderboard(bot):
     Leaderboard command
     """
     @bot.tree.command(name="leaderboard", description="Displays daily and lifetime leaderboards")
-    @app_commands.describe(type='Daily or Lifetime', category='Daily leaderboard category')
+    @app_commands.describe(type='Daily or Lifetime Leaderboards', category='Leaderboard category')
     @app_commands.choices(
         type=[
             app_commands.Choice(name="Daily", value="daily"),
@@ -284,7 +284,7 @@ def mapper(bot):
 
 
 def warbrokers(bot):
-    @bot.tree.command(name="warbrokers", description="Game overview")
+    @bot.tree.command(name="warbrokers", description="Shows game overview")
     async def warbrokers(interaction: discord.Interaction):
         await interaction.response.send_message(content="<a:loading1:1295503606077980712>  Grabbing information...")
         total_playercount, playercount = await warbrokers_data.fetch_data(bot.session)
@@ -374,7 +374,7 @@ def trends(bot):
 
 
 def last_seen(bot):
-    @bot.tree.command(name="last_seen", description="Squad last seen")
+    @bot.tree.command(name="last_seen", description="Squad members' last seen")
     @app_commands.describe(squad='Squad to search for')
     async def last_seen(interaction: discord.Interaction, squad: str):
         await squad_last_seen.squad_last_seen(bot, interaction, squad, page_num=1)

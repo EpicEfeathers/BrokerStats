@@ -31,7 +31,7 @@ def help(bot):
     embed.add_field(name="</trends:1363307522303201341>", value=f":plus: {trends.description}\nShows game trends (like playercount) over a specified period.", inline=False)
 
     warbrokers = bot.tree.get_command("warbrokers")
-    embed.add_field(name="</warbrokers:1361892723744837762>", value=f":video_game: {warbrokers.description}\nShows some basic stats about the game itself..", inline=False)
+    embed.add_field(name="</warbrokers:1361892723744837762>", value=f":video_game: {warbrokers.description}\nShows some basic stats about the game itself.", inline=False)
 
 
     return embed
