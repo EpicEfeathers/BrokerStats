@@ -48,6 +48,8 @@ class Dropdown(discord.ui.Select):
 class Paginator(discord.ui.View):
     def __init__(self, user_id, data, timeout):
         super().__init__(timeout=timeout)
+        self.response = None
+        
         self.page_num = 0
         self.user_id = user_id
         self.timeout = timeout
@@ -56,14 +58,25 @@ class Paginator(discord.ui.View):
 
         self.is_active = True
 
-        self.add_item(Dropdown(self.user_id, self))
+        dropdown = Dropdown(self.user_id, self)
+        self.dropdown = dropdown
+        self.add_item(dropdown)
 
         self.right.disabled = (len(data) <= PAGE_SIZE)
 
     async def on_timeout(self) -> None:
-        if self.is_active:
-            for item in self.children:
+        self.dropdown.placeholder = 'This command has timed out!'
+
+        for option in self.dropdown.options:
+            option.default = False # without this, default overrides placeholder
+
+        for item in self.children:
+            if isinstance(item, discord.ui.Button) and item.url is None:
                 item.disabled = True
+            elif not isinstance(item, discord.ui.Button):
+                item.disabled = True
+
+            await self.response.edit(view=self)
 
     async def ensure_user(self, interaction):
         if interaction.user.id != self.user_id:
@@ -101,5 +114,4 @@ class Paginator(discord.ui.View):
 
 
         code_block = get_data.create_code_block(self.data, start_index=self.page_num * PAGE_SIZE, end_index=self.page_num * PAGE_SIZE + PAGE_SIZE)
-        print(self.page_num)
         await interaction.response.edit_message(content=code_block, view=self)

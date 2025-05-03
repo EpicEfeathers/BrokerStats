@@ -73,47 +73,43 @@ async def scrape(session, uid):
 
         return player_stats
 
-async def fetch_squad(squad):
-    async with aiohttp.ClientSession() as session:
-        # Prepare all the URLs
-        api_url = f"https://wbapi.wbpjs.com/squad/getSquadMembers?squadName={squad}"
-        
-        api_stats = await asyncio.gather(fetch(session, api_url))
+async def fetch_squad(session, squad):
+    async with session.get(f"https://wbapi.wbpjs.com/squad/getSquadMembers?squadName={squad}") as response:
+        api_stats = await response.json()
 
-        db_data = api_stats[0]
-        squad_member_count = len(db_data)
-        total_level = sum(user["level"] for user in db_data)
-        total_xp = sum(user["xp"] for user in db_data)
-        average_level = round(total_level/squad_member_count, 1)
-        
-        squad_data = {
-            "member_count": squad_member_count, 
-            "level": total_level,
-            "average_level": average_level,
-            "xp": total_xp,
-            "members": db_data
-        }
-        return squad_data
+    db_data = api_stats
+    squad_member_count = len(db_data)
+    total_level = sum(user["level"] for user in db_data)
+    total_xp = sum(user["xp"] for user in db_data)
+    average_level = round(total_level/squad_member_count, 1)
     
-async def fetch_squad_users(squad_stats):
+    squad_data = {
+        "member_count": squad_member_count, 
+        "level": total_level,
+        "average_level": average_level,
+        "xp": total_xp,
+        "members": db_data
+    }
+    return squad_data
+    
+async def fetch_squad_users(session, squad_stats):
     uids = [member['uid'] for member in squad_stats["members"]]
-    async with aiohttp.ClientSession() as session:
 
-        tasks = []
-        for uid in uids:
-            tasks.append(fetch_time(session, f"https://wbapi.wbpjs.com/players/getPlayer?uid={uid}"))
-            tasks.append(scrape(session, uid))
-        
-        # Execute all requests concurrently
-        api_stats = await asyncio.gather(*tasks)
+    tasks = []
+    for uid in uids:
+        tasks.append(fetch_time(session, f"https://wbapi.wbpjs.com/players/getPlayer?uid={uid}"))
+        tasks.append(scrape(session, uid))
+    
+    # Execute all requests concurrently
+    api_stats = await asyncio.gather(*tasks)
 
-        new_list = []
-        for i in range(len(api_stats)):
-            if i % 2 == 0:
-                api_stats[i+1]["time"] = api_stats[i]
-                new_list.append(api_stats[i+1])
+    new_list = []
+    for i in range(len(api_stats)):
+        if i % 2 == 0:
+            api_stats[i+1]["time"] = api_stats[i]
+            new_list.append(api_stats[i+1])
 
-        return new_list
+    return new_list
     
 '''squad_data = asyncio.run(fetch_squad('UMS'))
 user_stats = asyncio.run(fetch_squad_users(squad_data))

@@ -15,8 +15,8 @@ async def squad_command(client, squad, interaction):
         try:
             # getting info
             await interaction.response.send_message(content="<a:loading1:1295503606077980712>  Grabbing information... This could take a few seconds, so please be patient!")
-            squad_data = await fetch_squad(squad)
-            user_data = await fetch_squad_users(squad_data)
+            squad_data = await fetch_squad(client.session, squad)
+            user_data = await fetch_squad_users(client.session, squad_data)
             stats = parse_data(user_data, squad_data, squad)
 
             # creating stat
@@ -24,7 +24,7 @@ async def squad_command(client, squad, interaction):
             stat_card = discord.File(fp=squad_image.create_stat_card(stats=stats), filename="stat_card.png")
 
             #adding view and sending message
-            view = menu_paginator.first_view(interaction.user.id, stats["users"], squad, 180)
+            view = menu_paginator.first_view(interaction.user.id, stats["users"], squad, 180, client.session)
             await interaction.edit_original_response(content="", attachments=[stat_card], view=view)
             view.response = await interaction.original_response()
         except Exception as e:

@@ -19,7 +19,7 @@ from utils.commands.maps import get_data, process_data
 from utils.commands.warbrokers import fetch_data as warbrokers_data, create_image as create_warbrokers_image
 
 from utils.commands.trends import daily_playercount_data, total_playercount_data, trends as trends_data
-from utils.commands.squad_last_seen import squad_last_seen
+from utils.commands.squad_last_seen import squad_last_seen, get_data as get_last_seen_data, menu_paginator
 
 from utils.commands.help import help as help_command
 
@@ -182,6 +182,8 @@ def help(bot):
 def broker_stats(bot):
     @bot.tree.command(name="broker_stats", description="Broker Stats overview")
     async def broker_stats(interaction: discord.Interaction):
+        await interaction.response.send_message(content="<a:loading1:1295503606077980712>  Grabbing information...", ephemeral=(interaction.user.id == 747797252105306212)) # if me
+
         stats = await get_broker_stats.get_stats(bot)
 
         message = (
@@ -202,10 +204,10 @@ def broker_stats(bot):
             users = stats['users']
             message = message.replace(f"**Total users:** {stats['total_users']}\n", f"**Total users:** {stats['total_users']}\n{users}\n")
             
-            await interaction.response.send_message(message, ephemeral=True)
+            await interaction.edit_original_response(content=message)
         else:
 
-            await interaction.response.send_message(message)
+            await interaction.edit_original_response(content=message)
 
 
 
@@ -377,7 +379,17 @@ def last_seen(bot):
     @bot.tree.command(name="last_seen", description="Squad members' last seen")
     @app_commands.describe(squad='Squad to search for')
     async def last_seen(interaction: discord.Interaction, squad: str):
-        await squad_last_seen.squad_last_seen(bot, interaction, squad, page_num=1)
+        await interaction.response.send_message(content="<a:loading1:1295503606077980712>  Grabbing information...")
+        # get data
+        uids = await get_last_seen_data.get_squad_users(bot.session, squad)
+        data = await get_last_seen_data.get_all_data(bot.session, uids)
+
+        data = get_last_seen_data.sort_data("sort_asc", data)
+
+        # create view
+        view = menu_paginator.Paginator(interaction.user.id, data, timeout=3)
+        await squad_last_seen.squad_last_seen(bot, interaction, view, data, squad)
+        view.response = await interaction.original_response()
 
     @last_seen.autocomplete('squad')
     async def last_seen_autocomplete(interaction: discord.Interaction,current: str) -> List[app_commands.Choice[str]]:

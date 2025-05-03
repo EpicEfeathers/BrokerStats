@@ -8,10 +8,12 @@ from stats import stats
 PAGE_SIZE = 25
 
 class SquadDropdown(discord.ui.Select):
-    def __init__(self, user_id, users:list, num):
+    def __init__(self, user_id, users:list, num, session):
         self.user_id = user_id
         user_items = list(users.items())
         options = [discord.SelectOption(label=username, value=uid) for username, uid in user_items[(num-1)*PAGE_SIZE:num*PAGE_SIZE]]
+
+        self.session = session
 
         super().__init__(placeholder=f'See the stats of a squad member (pg. {num}/{math.ceil(len(users)/PAGE_SIZE)})', min_values=1, max_values=1, options=options, row=1)
 
@@ -20,7 +22,7 @@ class SquadDropdown(discord.ui.Select):
             await interaction.response.send_message("Hey! This is not your command!", ephemeral=True)
             return
            
-        await stats.stats_command(interaction, uid=self.values[0], username=None, ephemeral=True)
+        await stats.stats_command(interaction, self.session, uid=self.values[0], username=None, ephemeral=True)
 
 class BaseView(discord.ui.View):
     def __init__(self, user_id, squad, timeout=None):
@@ -40,7 +42,7 @@ class BaseView(discord.ui.View):
         return False
         
 class first_view(BaseView):
-    def __init__(self, user_id, users, squad, timeout):
+    def __init__(self, user_id, users, squad, timeout, session):
         super().__init__(user_id=user_id, squad=squad, timeout=timeout)
         self.user_id = user_id
         self.users = users
@@ -49,6 +51,8 @@ class first_view(BaseView):
 
         self.response = None
         self.is_active = True
+
+        self.session = session
 
     async def on_timeout(self) -> None:
         if self.is_active:
@@ -66,12 +70,12 @@ class first_view(BaseView):
             return
         
         self.is_active = False
-        view = second_view(self.user_id, self.users, self.squad, timeout=self.timeout)
+        view = second_view(self.user_id, self.users, self.squad, timeout=self.timeout, session=self.session)
         await interaction.response.edit_message(view=view)
         view.response = await interaction.original_response()
 
 class second_view(BaseView):
-    def __init__(self, user_id, users:list, squad, timeout):
+    def __init__(self, user_id, users:list, squad, timeout, session):
         super().__init__(user_id=user_id, squad=squad, timeout=timeout)
         self.num = 1
         self.user_id = user_id
@@ -83,7 +87,7 @@ class second_view(BaseView):
         self.is_active = True
 
         # Adds the dropdown to our view object.
-        self.dropdown = SquadDropdown(self.user_id, users, self.num)
+        self.dropdown = SquadDropdown(self.user_id, users, self.num, session)
         self.add_item(self.dropdown)
 
         self.right.disabled = len(users) <= 25

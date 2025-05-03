@@ -25,13 +25,13 @@ def help(bot):
     embed.add_field(name="</broker_stats:1331305581587337298>", value=f":1234: {broker_stats.description}\nReturns basic stats on the bot itself.", inline=False)
 
     last_seen = bot.tree.get_command("last_seen")
-    embed.add_field(name="</last_seen:1364015029216874627>", value=f":hourglass: {last_seen.description}\nReturns a list of all squad members most recent playtimes.", inline=False)
+    embed.add_field(name="</last_seen:1366488950096527465>", value=f":hourglass: {last_seen.description}\nReturns a list of all squad members most recent playtimes.", inline=False)
 
     trends = bot.tree.get_command("trends")
-    embed.add_field(name="</trends:1363307522303201341>", value=f":plus: {trends.description}\nShows game trends (like playercount) over a specified period.", inline=False)
+    embed.add_field(name="</trends:1366488950096527464>", value=f":plus: {trends.description}\nShows game trends (like playercount) over a specified period.", inline=False)
 
     warbrokers = bot.tree.get_command("warbrokers")
-    embed.add_field(name="</warbrokers:1361892723744837762>", value=f":video_game: {warbrokers.description}\nShows some basic stats about the game itself.", inline=False)
+    embed.add_field(name="</warbrokers:1366488950096527463>", value=f":video_game: {warbrokers.description}\nShows some basic stats about the game itself.", inline=False)
 
 
     return embed

@@ -26,7 +26,7 @@ def create_stats_card(stats):
     """
 
     #kills_needed, deaths_to_avoid = functions.calculate_kdr_changes(int(stats['kills'].replace(",","")), int(stats['deaths'].replace(",","")))
-    kills_needed, deaths_to_avoid = functions.calculate_kdr_changes(stats['kills'], int(stats['deaths'].replace(",","")))
+    kills_needed, deaths_to_avoid = functions.calculate_kdr_changes(stats['kills'], stats['deaths'])
 
     STAT_COLOR_WHITE = (1,1,1)
     PERCENTILE_COLOR = (0.75,0.75,0.75)

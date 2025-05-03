@@ -55,11 +55,17 @@ async def fetch_all(session, uid):
     api_stats.update(scraped_data)
     kills_per_vehicle = api_stats.get("kills_per_vehicle") or {} # if value is null (if player has no kills) then return empty dict instead of breaking
     kills_per_weapon = api_stats.get("kills_per_weapon") or {}
-    api_stats["kills"] = int(sum(value for key, value in kills_per_vehicle.items() if key != "v30"))
-    api_stats["kills"] += int(sum(kills_per_weapon.values()))
-    api_stats["kills"]
+    self_destructs = api_stats.get("self_destructs") or {}
 
-    api_stats["deaths"] = str(sum(deaths_per_weapon.values()))
-    api_stats["kills / death"] = int(api_stats["kills"]) / int(api_stats["deaths"])
+    # calculate kills (vehicle kills (minus the player vechile) + weapon kills)
+    api_stats["kills"] = sum(value for key, value in kills_per_vehicle.items() if key != "v30")
+    api_stats["kills"] += sum(kills_per_weapon.values())
+
+    # calculate deaths (weapon deaths + self-destructs)
+    api_stats["deaths"] = sum(deaths_per_weapon.values())
+    api_stats["deaths"] += sum(self_destructs.values())
+
+    # calculate kdr
+    api_stats["kills / death"] = api_stats["kills"] / api_stats["deaths"]
     
     return api_stats

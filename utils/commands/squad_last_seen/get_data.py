@@ -1,8 +1,6 @@
 from datetime import datetime, timezone
 from utils import functions
 
-import pyperclip
-
 async def get_squad_users(session, squad: str):
     async with session.get(f"https://wbapi.wbpjs.com/squad/getSquadMembers?squadName={squad}") as resp:
         users = await resp.json()
@@ -53,8 +51,8 @@ def create_code_block(users_data:list, start_index, end_index):
 
     end_index = min(end_index, len(users_data)) # make sure doesn't overflow data length
     for user in users_data[start_index:end_index]:
-        code_block = code_block + f"\n[0;34m{user["username"]}{" " * (max_username_length-len(user["username"]))}   [0;37m{user["formatted_time"]}   [0;36m{functions.time_since_last_seen(user["timestamp"])}"
+        code_block = code_block + f"\n[0;34m{user['username']}{' ' * (max_username_length-len(user['username']))}   [0;37m{user['formatted_time']}   [0;36m{functions.time_since_last_seen(user['timestamp'])}"
 
-    code_block = f"```ansi\n[1;37mUsername{" " * (max_username_length-len("username"))}   Last seen (GMT)      Time ago\n{code_block}```" # convert to discord format
+    code_block = f"```ansi\n[1;37mUsername{' ' * (max_username_length-len('username'))}   Last seen (GMT)      Time ago\n{code_block}```" # convert to discord format
 
     return code_block

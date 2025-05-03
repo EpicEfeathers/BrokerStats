@@ -14,7 +14,7 @@ from utils.database_stuff import functions as db_functions
 activity = discord.Activity(name = "my activity", type = discord.ActivityType.custom, state = "Shooting bots")
 intents = discord.Intents().default()
 
-MY_GUILD = discord.Object(id=1295425214020194304)
+GUILDS = [discord.Object(id=1295425214020194304)]
 SQUAD_LIST_URL = "https://wbapi.wbpjs.com/squad/getSquadList"
 
 # Mybot class
@@ -28,8 +28,9 @@ class Mybot(commands.Bot):
     # sets commands to just the official server (so no 1 hour wait) CHANGE UPON RELEASE
     async def setup_hook(self):
         # This copies the global commands over to your guild.
-        self.tree.copy_global_to(guild=MY_GUILD)
-        await self.tree.sync(guild=MY_GUILD)
+        for guild in GUILDS:
+            self.tree.copy_global_to(guild=guild)
+            await self.tree.sync(guild=guild)
 
         self.session = ClientSession() # setting here, as must be in async function
 

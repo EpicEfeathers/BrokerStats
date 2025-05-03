@@ -12,36 +12,6 @@ def calculate_length(font_path, font_size, text):
     extents = context.text_extents(text)
     text_width = extents.width
 
-    #print(text_width)
-
-
-'''def add_stats_text_element(text_info, context):
-    """
-    Adds text element to image (way too complicated).
-    Can handle adding a single color, or multiple colors.
-    """
-
-    font_path, text, position, color, font_size, alignment = text_info  # Unpack text information
-    context.select_font_face(font_path, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
-    context.set_font_size(font_size)
-
-    if not isinstance(text, list) or text[0] == "": # for single colors
-
-        positions = calculate_position(context, str(text), position, alignment) # calculates proper position based on alignment
-
-        # as these are returned as strings or tuples, and not lists of strings or tuples,
-        # convert them to the proper format so they can be used below
-        text = [text]
-        color = [color]
-        positions = [positions]
-    else: # for multiple colors
-        positions = calculate_multiple_positions(context, text, position, alignment) # calculated proper positions of different segments based on alignment
-
-    for i, position in enumerate(positions):
-        context.set_source_rgb(*color[i])
-        context.move_to(*position)
-        context.show_text(str(text[i]))'''
-
 
 def add_text_element(text_info, context):
     try: # if space_width is passed
@@ -50,9 +20,31 @@ def add_text_element(text_info, context):
         font_path, text, position, color, font_size, alignment = text_info  # Unpack text information.
         space_width = 15 # default width
 
+    #context.set_font_size(font_size)
+
+    # Ensure consistent font setup for measurement
+    if isinstance(font_path, list):
+        context.select_font_face(font_path[0], cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
+    else:
+        context.select_font_face(font_path, cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
+
     context.set_font_size(font_size)
 
-    if not isinstance(font_path, list) and not isinstance(text, list) or text[0] == "": # if font path is not a list (just one font)
+    if not isinstance(font_path, list) and not isinstance(text, list) or text[0] == "":
+        positions = calculate_position(context, str(text), position, alignment)
+        font_path = [font_path]
+        text = [text]
+        color = [color]
+        positions = [positions]
+    elif isinstance(font_path, list):
+        x_diff, y = calculate_two_positions(context, text[0], position)
+        positions = [(position[0], y), (position[0] + x_diff, y)]
+        color = [color for position in positions]
+    else:
+        positions = calculate_multiple_positions(context, text, position, alignment, space_width)
+        font_path = [font_path]
+
+    '''if not isinstance(font_path, list) and not isinstance(text, list) or text[0] == "": # if font path is not a list (just one font)
         positions = calculate_position(context, str(text), position, alignment)
         font_path = [font_path]
         text = [text]
@@ -64,7 +56,7 @@ def add_text_element(text_info, context):
         color = [color for position in positions]
     else: # if multiple pieces of text, same font
         positions = calculate_multiple_positions(context, text, position, alignment, space_width) # calculated proper positions of different segments based on alignment
-        font_path = [font_path]
+        font_path = [font_path]'''
 
     for i, position in enumerate(positions):
         context.move_to(*position)
@@ -74,7 +66,6 @@ def add_text_element(text_info, context):
             context.select_font_face(font_path[i], cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
         else:
             context.select_font_face(font_path[-1], cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
-
 
         context.set_source_rgb(*color[i])
         context.show_text(str(text[i]))
