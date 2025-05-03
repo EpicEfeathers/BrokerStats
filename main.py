@@ -82,12 +82,7 @@ async def on_ready():
         print(e)
         pass
     print(f"Successfully logged in as \033[1m{bot.user}\033[0m")    
-
-# Test command
-@bot.tree.command()
-async def test(interaction: discord.Interaction):
-    await interaction.response.send_message(f"{interaction.user.mention}, bot is up and running!", ephemeral=True)
-
+    
 my_commands.stats(bot)
 my_commands.linkstats(bot)
 my_commands.squad(bot)
