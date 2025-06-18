@@ -22,6 +22,7 @@ from utils.commands.trends import daily_playercount_data, total_playercount_data
 from utils.commands.squad_last_seen import squad_last_seen, get_data as get_last_seen_data, menu_paginator
 
 from utils.commands.help import help as help_command
+from utils.commands.faq import faq as faq_command
 
 
 
@@ -177,6 +178,14 @@ def help(bot):
         embed = help_command.help(bot)
         
         await interaction.response.send_message(embed=embed)
+
+
+def faq(bot):
+    @bot.tree.command(name="faq", description="Answers to Frequently Asked Questions about the bot")
+    async def faq(interaction: discord.Interaction):
+        message = faq_command.faq_message()
+        
+        await interaction.response.send_message(message)
 
 
 def broker_stats(bot):

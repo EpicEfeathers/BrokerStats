@@ -21,6 +21,9 @@ def help(bot):
     help = bot.tree.get_command("help")
     embed.add_field(name="</help:1316396080359018598>", value=f":question: {help.description}\nDisplays this command.", inline=False)
 
+    faq = bot.tree.get_command("faq")
+    embed.add_field(name="</faq:1385035757101650041>", value=f":information_source: {faq.description}\nDisplays a short FAQ about the bot.", inline=False)
+
     broker_stats = bot.tree.get_command("broker_stats")
     embed.add_field(name="</broker_stats:1331305581587337298>", value=f":1234: {broker_stats.description}\nReturns basic stats on the bot itself.", inline=False)
 
