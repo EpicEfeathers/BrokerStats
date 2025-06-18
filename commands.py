@@ -387,7 +387,7 @@ def last_seen(bot):
         data = get_last_seen_data.sort_data("sort_asc", data)
 
         # create view
-        view = menu_paginator.Paginator(interaction.user.id, data, timeout=3)
+        view = menu_paginator.Paginator(interaction.user.id, data, timeout=180)
         await squad_last_seen.squad_last_seen(bot, interaction, view, data, squad)
         view.response = await interaction.original_response()
 

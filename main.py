@@ -14,7 +14,7 @@ from utils.database_stuff import functions as db_functions
 activity = discord.Activity(name = "my activity", type = discord.ActivityType.custom, state = "Shooting bots")
 intents = discord.Intents().default()
 
-GUILDS = [discord.Object(id=1295425214020194304)]
+GUILDS = [discord.Object(id=1295425214020194304), discord.Object(id=901934922997055499)]
 SQUAD_LIST_URL = "https://wbapi.wbpjs.com/squad/getSquadList"
 
 # Mybot class
