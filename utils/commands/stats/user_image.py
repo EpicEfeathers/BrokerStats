@@ -36,56 +36,45 @@ def create_stats_card(stats):
     STAT_SIZE = 41
     SUPPORTING_TEXT_SIZE = 34
     text_elements = [ # Adding each individual piece of text
-        # NAME
+        # CREATION DATE
         (BOLD, ["Created:", functions.uid_to_creation_date(stats["uid"])], (1140, RIGHT_Y_POSITION + 233), [PERCENTILE_COLOR, STAT_COLOR_WHITE], 30, "mm"),
-        #(THIN, functions.time_since_last_seen(stats["time"]), (1140, RIGHT_Y_POSITION + 260), STAT_COLOR, 38, "mm"), # old_y = 263
         # KDR
         (BOLD, str(round(float(stats['kills / death']), 1)), (LEFT_TEXT, RIGHT_Y_POSITION + 323 + 45), STAT_COLOR_WHITE, STAT_SIZE, "lm"),
         (THIN, "Top ??%", (RIGHT_TEXT, RIGHT_Y_POSITION + 323), PERCENTILE_COLOR, 30, "rm"),
-        #(THIN, f"{kills_needed} kills to advance", (LEFT_TEXT, RIGHT_Y_POSITION + 323 + 85), PERCENTILE_COLOR, SUPPORTING_TEXT_SIZE, "lm"),
         (BOLD, [kills_needed, "kills to advance"], (LEFT_TEXT, RIGHT_Y_POSITION + 323 + 85), [(0,1,0), PERCENTILE_COLOR], SUPPORTING_TEXT_SIZE, "lm"),
         (BOLD, [deaths_to_avoid, "deaths to avoid"], (LEFT_TEXT, RIGHT_Y_POSITION + 323 + 118), [(1,60/250,60/250), PERCENTILE_COLOR], SUPPORTING_TEXT_SIZE, "lm"),
-        #(THIN, f"{deaths_to_avoid} deaths to avoid", (LEFT_TEXT, RIGHT_Y_POSITION + 323 + 118), PERCENTILE_COLOR, SUPPORTING_TEXT_SIZE, "lm"),
         # KPM
-        #(THIN, "Kills / Min", (LEFT_TEXT, RIGHT_Y_POSITION + 509), (1, 1, 1), 38, "lm"),
         (BOLD, str(round(float(stats['kills / min']), 1)), (LEFT_TEXT, RIGHT_Y_POSITION + 509 + 45), (1, 1, 1), STAT_SIZE, "lm"),
         (THIN, "Top ??%", (RIGHT_TEXT, RIGHT_Y_POSITION + 509), PERCENTILE_COLOR, 30, "rm"),
         # LEVEL
         (BOLD, f"Level {stats['level']}", (LEFT_TEXT, RIGHT_Y_POSITION + 615), (1, 1, 1), STAT_SIZE, "lm"),
         (THIN, f"Top {stats['xpPercentile']}%", (RIGHT_TEXT, RIGHT_Y_POSITION + 615), PERCENTILE_COLOR, 30, "rm"),
-        #(THIN, f"{stats['progressPercentage']} to next level", (LEFT_TEXT, RIGHT_Y_POSITION + 615 + 39), PERCENTILE_COLOR, SUPPORTING_TEXT_SIZE, "lm"),
         (BOLD, ["Progress:", stats['progressPercentage']], (LEFT_TEXT, RIGHT_Y_POSITION + 615 + 39), [PERCENTILE_COLOR, STAT_COLOR_WHITE], SUPPORTING_TEXT_SIZE, "lm"),
         (BOLD, ["XP:", functions.format_large_number(stats['xp'])], (LEFT_TEXT, RIGHT_Y_POSITION + 615 + 80), [PERCENTILE_COLOR, STAT_COLOR_WHITE], SUPPORTING_TEXT_SIZE, "lm"),
 
         # KILLS
-        #(THIN, "Kills:", (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION - 45), (1, 1, 1), STAT_SIZE, "lm"),
         (BOLD, functions.format_large_number(stats["kills"]), (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION), STAT_COLOR_WHITE, STAT_SIZE, "lm"),
         (THIN, "Top ??%", (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 45), PERCENTILE_COLOR, 30, "lm"),
         # DEATHS
-        #(THIN, "Deaths:", (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION - 45), (1, 1, 1), STAT_SIZE, "lm"),
         (BOLD, functions.format_large_number(stats["deaths"]), (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION), STAT_COLOR_WHITE, STAT_SIZE, "lm"),
         (THIN, "Top ??%", (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 45), PERCENTILE_COLOR, 30, "lm"),
         # CLASSIC WINS
-        #(THIN, "Classic Wins:", (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + (SPACING + SIZE[1]) - 45), (1, 1, 1), STAT_SIZE, "lm"),
         (BOLD, stats["classic mode wins"], (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + (SPACING + SIZE[1])), STAT_COLOR_WHITE, STAT_SIZE, "lm"),
         (THIN, "Top ??%", (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + (SPACING + SIZE[1]) + 45), PERCENTILE_COLOR, 30, "lm"),
         # BR WINS
-        #(THIN, "BR Wins:", (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + (SPACING + SIZE[1])- 45), (1, 1, 1), STAT_SIZE, "lm"),
         (BOLD, stats["battle royale wins"], (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + (SPACING + SIZE[1])), STAT_COLOR_WHITE, STAT_SIZE, "lm"),
         (THIN, "Top ??%", (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + (SPACING + SIZE[1]) + 45), PERCENTILE_COLOR, 30, "lm"),
         # KELO
-        #(THIN, "Kills ELO", (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 2*(SPACING + SIZE[1]) - 45), (1, 1, 1), STAT_SIZE, "lm"),
         (BOLD, stats["killsELO"], (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 2*(SPACING + SIZE[1])), STAT_COLOR_WHITE, STAT_SIZE, "lm"),
         (THIN, f"Top {stats['killsEloPercentile']}%", (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 2*(SPACING + SIZE[1])+ 45), PERCENTILE_COLOR, 30, "lm"),
         # GELO
-        #(THIN, "Games ELO", (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 2*(SPACING + SIZE[1])- 45), (1, 1, 1), STAT_SIZE, "lm"),
         (BOLD, stats["gamesELO"], (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 2*(SPACING + SIZE[1])), STAT_COLOR_WHITE, STAT_SIZE, "lm"),
         (THIN, f"Top {stats['gamesEloPercentile']}%", (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 2*(SPACING + SIZE[1])+ 45), PERCENTILE_COLOR, 30, "lm"),
     ]
     # add name
     if stats["squad"] != "": # if player part of squad
         cairo_functions.calculate_length(BOLD, 38, f"{stats['squad']} {stats['nick']}")
-        text_elements.append((BOLD, [stats["squad"], f"{stats['nick']}"], (1140, RIGHT_Y_POSITION + 190), [(156/255, 156/255, 248/255), username_color], 38, "mm"))
+        text_elements.append((BOLD, [f"[{stats["squad"]}]", f"{stats['nick']}"], (1140, RIGHT_Y_POSITION + 190), [(156/255, 156/255, 248/255), username_color], 38, "mm"))
     else:
         text_elements.append((BOLD, f"{stats['nick']}", (1140, RIGHT_Y_POSITION + 190), username_color, 38, "mm"))
 

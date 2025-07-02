@@ -53,9 +53,9 @@ async def fetch_all(session, uid):
     api_stats["xpPercentile"] = round((100 - xp_percentile), 1) # top x% = (100 - percentile). E.g. 95th percentile = Top 5%
 
     api_stats.update(scraped_data)
-    kills_per_vehicle = api_stats.get("kills_per_vehicle") or {} # if value is null (if player has no kills) then return empty dict instead of breaking
-    kills_per_weapon = api_stats.get("kills_per_weapon") or {}
-    self_destructs = api_stats.get("self_destructs") or {}
+    kills_per_vehicle = api_stats.get("kills_per_vehicle", {}) or {} # if value is null (if player has no kills) then return empty dict instead of breaking
+    kills_per_weapon = api_stats.get("kills_per_weapon", {}) or {}
+    self_destructs = api_stats.get("self_destructs", {}) or {}
 
     # calculate kills (vehicle kills (minus the player vechile) + weapon kills)
     api_stats["kills"] = sum(value for key, value in kills_per_vehicle.items() if key != "v30")
