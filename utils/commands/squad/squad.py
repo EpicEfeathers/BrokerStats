@@ -1,4 +1,5 @@
-from utils.commands.squad.get_squad_stats import fetch_squad, fetch_squad_users, parse_data
+#from utils.commands.squad.get_squad_stats import fetch_squad, fetch_squad_users, parse_data
+from utils.commands.squad.get_squad_stats import get_data
 from utils.commands.squad import squad_image, menu_paginator
 import traceback
 
@@ -8,19 +9,19 @@ import discord
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
 
 async def squad_command(client, squad, interaction):
-    await interaction.response.send_message("I'm sorry, but the squad command is being worked on. Right now, the bot has to call the API for every member, which is very hard on the bot.")
-    return
+    #await interaction.response.send_message("I'm sorry, but the squad command is being worked on. Right now, the bot has to call the API for every member, which is very hard on the bot.")
+    #return
 
     if squad in client.squad_list:
-        if squad == "CAESAR":
+        '''if squad == "CAESAR":
             await interaction.response.send_message("I'm sorry, but CAESAR does not currently work right now! With over 100 members, the way POMP's API is currently configured means too many requests. This should be resolved as soon as POMP has the free time to do it! Thanks for your patience :)")
-            return
+            return'''
         try:
             # getting info
-            await interaction.response.send_message(content="<a:loading1:1295503606077980712>  Grabbing information... This could take a few seconds, so please be patient!")
-            squad_data = await fetch_squad(client.session, squad)
-            user_data = await fetch_squad_users(client.session, squad_data)
-            stats = parse_data(user_data, squad_data, squad)
+            await interaction.response.send_message(content="<a:loading1:1295503606077980712>  Grabbing information...")
+            #squad_data = await fetch_squad(client.session, squad)
+            #user_data = await fetch_squad_users(client.session, squad_data)
+            stats = await get_data(client.session, squad)#parse_data(user_data, squad_data, squad)
 
             # creating stat
             await interaction.edit_original_response(content="<a:loading1:1295503606077980712>  Creating stat card...")

@@ -1,12 +1,72 @@
 from bs4 import BeautifulSoup
-import aiohttp
 import asyncio
 from datetime import datetime, timezone
 
+async def get_all_data(session):
+    '''
+    Gets the cached data (for every squad)
+    '''
+    data_url = "https://raw.githubusercontent.com/EpicEfeathers/wb/refs/heads/main/squad_info/squad_data.json"
 
-def parse_data(user_data, squad_stats, squad_name):
+    async with session.get(data_url) as response:
+        return await response.json(content_type=None) # skips checking if it's JSON, just assumes it is
+
+def extract_squad(all_data, squad_name):
+    '''
+    Gets the specific squad's data from all the squad data
+    '''
+    try:
+        return all_data[squad_name]
+    except KeyError:
+        print(f"KeyError. Could not find squad '{squad_name}' in the cached data.")
+
+
+async def get_data(session, squad_name):
+    '''
+    Gets data for a specific squad
+    '''
+    all_data = await get_all_data(session)
+    squad_data = extract_squad(all_data, squad_name)
+    users = await get_squad_users(session, squad_name)
+
+    squad_info = format_data(squad_data, users)
+
+    return squad_info
+
+def format_data(squad_data, users):
+    squad_data['kdr'] = round(squad_data['kills'] / squad_data['deaths'], 1) # calculate kdr data
+    squad_data['users'] = users
+    squad_data['member_count'] = len(users)
+
+    # find averages
+    squad_data['kills_elo'] = round(squad_data['kills_elo'] / len(users), 1)
+    squad_data['games_elo'] = round(squad_data['games_elo'] / len(users), 1)
+
+    squad_data['level'] = round(squad_data['level'] / len(users))
+
+
+    return squad_data
+
+
+async def get_squad_users(session, squad_name):
+    squad_url = f"https://wbapi.wbpjs.com/squad/getSquadMembers?squadName={squad_name}"
+
+    async with session.get(squad_url) as response:
+        squad_members = await response.json()
+
+    users = {user['nick']: user['uid'] for user in squad_members}
+
+    return users
+
+
+'''def parse_data(user_data, squad_stats, squad_name):
     member_count = squad_stats['member_count']
-    kills = sum(int(user["kills"].replace(',',"")) for user in user_data)
+    for user in user_data:
+        try:
+            user['kills']
+        except KeyError:
+            print(user)
+    #kills = sum(int(user["kills"].replace(',',"")) for user in user_data)
     deaths = sum(int(user["deaths"].replace(',',"")) for user in user_data)
     kdr = round(kills/deaths, 1)
     kpm = round(sum(float(user["kills / min"].replace(',',"")) for user in user_data) / member_count, 1)
@@ -19,6 +79,7 @@ def parse_data(user_data, squad_stats, squad_name):
 
     active_players = 0
     for user in user_data:
+        print(user)
         if datetime.now(timezone.utc).timestamp() - user["time"] < 604800: # 604800s = 1 week
             active_players += 1
 
@@ -28,7 +89,7 @@ def parse_data(user_data, squad_stats, squad_name):
     #users = [user['nick'] for user in squad_stats['members']]
 
     info = {
-        "squad": squad_name,
+        "squad_name": squad_name,
         "member_count": member_count,
         "active_players": active_players,
         "kdr": kdr,
@@ -37,82 +98,11 @@ def parse_data(user_data, squad_stats, squad_name):
         "xp": squad_stats["xp"],
         "kills": kills,
         "deaths": deaths,
-        "classic wins": classic_wins,
-        "br wins": br_wins,
+        "classic_wins": classic_wins,
+        "br_wins": br_wins,
         "kills_elo": kills_elo,
         "games_elo": games_elo,
         "users": users
     }
 
-    return info
-
-
-# async API call
-async def fetch(session, url):
-    async with session.get(url) as response:
-        return await response.json()
-
-async def fetch_time(session, url):
-    async with session.get(url) as response:
-        data = await response.json()
-        return data.get("time")
-    
-async def scrape(session, uid):
-    URL = f"https://stats.warbrokers.io/players/i/{uid}"
-    async with session.get(URL) as page:
-        content = await page.text()
-        soup = BeautifulSoup(content, "html.parser")
-        
-        player_stats = {}
-        stats = soup.find_all('div', class_='player-details-number-box-grid')
-
-        for stat in stats:
-            header = stat.find('div', class_='player-details-number-box-header').get_text(strip=True).lower()
-            value = stat.find('div', class_='player-details-number-box-value').get_text(strip=True)
-            player_stats[header] = value
-
-        return player_stats
-
-async def fetch_squad(session, squad):
-    async with session.get(f"https://wbapi.wbpjs.com/squad/getSquadMembers?squadName={squad}") as response:
-        api_stats = await response.json()
-
-    db_data = api_stats
-    squad_member_count = len(db_data)
-    total_level = sum(user["level"] for user in db_data)
-    total_xp = sum(user["xp"] for user in db_data)
-    average_level = round(total_level/squad_member_count, 1)
-    
-    squad_data = {
-        "member_count": squad_member_count, 
-        "level": total_level,
-        "average_level": average_level,
-        "xp": total_xp,
-        "members": db_data
-    }
-    return squad_data
-    
-async def fetch_squad_users(session, squad_stats):
-    uids = [member['uid'] for member in squad_stats["members"]]
-
-    tasks = []
-    for uid in uids:
-        tasks.append(fetch_time(session, f"https://wbapi.wbpjs.com/players/getPlayer?uid={uid}"))
-        tasks.append(scrape(session, uid))
-    
-    # Execute all requests concurrently
-    api_stats = await asyncio.gather(*tasks)
-
-    new_list = []
-    for i in range(len(api_stats)):
-        if i % 2 == 0:
-            api_stats[i+1]["time"] = api_stats[i]
-            new_list.append(api_stats[i+1])
-
-    return new_list
-    
-'''squad_data = asyncio.run(fetch_squad('UMS'))
-user_stats = asyncio.run(fetch_squad_users(squad_data))
-info = parse_data(user_stats, squad_data, "UMS")
-
-print(info)'''
+    return info'''

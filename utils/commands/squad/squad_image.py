@@ -123,14 +123,14 @@ def create_stat_card(stats):
 
     text_elements = [
         # NAME
-        (THIN, stats['squad'], (1140, RIGHT_Y_POSITION + 225), (156/255, 156/255, 248/255), 60, "mm"),
+        (THIN, stats['squad_name'], (1140, RIGHT_Y_POSITION + 225), (156/255, 156/255, 248/255), 60, "mm"),
         # ACTIVE MEMBERS
-        ([BOLD, THIN], [str(stats['member_count']), f"({stats['active_players']} active this week)"], (LEFT_TEXT, RIGHT_Y_POSITION + 300 + 45), STAT_COLOR_WHITE, 41, "lm"),
+        ([BOLD, THIN], [str(stats['member_count']), f"({stats['seen_recently']} active this week)"], (LEFT_TEXT, RIGHT_Y_POSITION + 300 + 45), STAT_COLOR_WHITE, 41, "lm"),
         # KDR
         (BOLD, str(round(float(stats['kdr']), 1)), (LEFT_TEXT, RIGHT_Y_POSITION + 401 + 45), STAT_COLOR_WHITE, 41, "lm"),
         # KPM
         #(THIN, "Kills / Min", (LEFT_TEXT, RIGHT_Y_POSITION + 509), STAT_COLOR_WHITE, 38, "lm"),
-        (BOLD, str(round(float(stats['kpm']), 1)), (LEFT_TEXT, RIGHT_Y_POSITION + 500 + 45), STAT_COLOR_WHITE, 41, "lm"),
+        #(BOLD, str(round(float(stats['kpm']), 1)), (LEFT_TEXT, RIGHT_Y_POSITION + 500 + 45), STAT_COLOR_WHITE, 41, "lm"),
         # LEVEL
         (BOLD, f"{stats['level']}", (LEFT_TEXT, RIGHT_Y_POSITION + 600 + 45), STAT_COLOR_WHITE, 41, "lm"),
         (BOLD, ["Total XP: ", format_large_number(stats['xp'])], (LEFT_TEXT, RIGHT_Y_POSITION + 615 + 75), [PERCENTILE_COLOR, STAT_COLOR_WHITE], 38, "lm"),
@@ -143,10 +143,10 @@ def create_stat_card(stats):
         (BOLD, format_large_number(stats["deaths"]), (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 25), STAT_COLOR_WHITE, 41, "lm"),
         # KILLS
         #(THIN, "Classic Wins:", (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + (SPACING + SIZE[1]) - 45), STAT_COLOR_WHITE, 41, "lm"),
-        (BOLD, format_large_number(stats["classic wins"]), (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 25 + (SPACING + SIZE[1])), STAT_COLOR_WHITE, 41, "lm"),
+        (BOLD, format_large_number(stats["classic_wins"]), (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 25 + (SPACING + SIZE[1])), STAT_COLOR_WHITE, 41, "lm"),
         # KILLS
         #(THIN, "BR Wins:", (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + (SPACING + SIZE[1])- 45), STAT_COLOR_WHITE, 41, "lm"),
-        (BOLD, format_large_number(stats["br wins"]), (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 25 + (SPACING + SIZE[1])), STAT_COLOR_WHITE, 41, "lm"),
+        (BOLD, format_large_number(stats["br_wins"]), (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 25 + (SPACING + SIZE[1])), STAT_COLOR_WHITE, 41, "lm"),
         # KILLS
         #(THIN, "Kills ELO", (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 2*(SPACING + SIZE[1]) - 45), STAT_COLOR_WHITE, 41, "lm"),
         (BOLD, stats["kills_elo"], (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 25 + 2*(SPACING + SIZE[1])), STAT_COLOR_WHITE, 41, "lm"),
