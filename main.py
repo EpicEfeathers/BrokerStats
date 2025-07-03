@@ -7,6 +7,7 @@ import traceback
 from aiohttp import ClientSession, ClientTimeout
 
 import commands as my_commands
+from utils.commands.help.help import help # help command for when mentioned
 from utils.monitor_pi import monitor_stats
 from utils.database_stuff import functions as db_functions
 #handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
@@ -115,6 +116,18 @@ async def on_app_command_error(interaction: discord.Interaction, error: discord.
         await interaction.followup.send(error_message)
     else:
         await interaction.response.send_message(error_message, ephemeral=True)
+
+@bot.event
+async def on_message(message: discord.Message):
+    if message.author.bot:
+        return  # Ignore bots
+
+    # Skip messages that are just mentions or otherwise not intended as commands
+    if message.content.startswith(f"<@{bot.user.id}>") or message.content.startswith(f"<@!{bot.user.id}>"):
+        await message.channel.send(embed=help(bot))
+        return # to avoid CommandNotFound error
+
+    await bot.process_commands(message)
 
 # CHANGE SECRET ON RELEASE
 # HEY YOUUUUUUUU - CHANGELOG IN DISCORD + VERSION NUMBER :P

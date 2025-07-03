@@ -94,11 +94,15 @@ def squad_members(im):
 def kdr(im):
     Y_POSITION = RIGHT_Y_POSITION + 401
     background_functions.text_narrow(im, text="Squad Kills / Death:", color=(255,255,255), position=(LEFT_TEXT,Y_POSITION), font_size=38, anchor="lm")
+# coin title
+def coins(im):
+    Y_POSITION = RIGHT_Y_POSITION + 500
+    background_functions.text_narrow(im, text="Total Coings:", color=(255,255,255), position=(LEFT_TEXT,Y_POSITION), font_size=38, anchor="lm")
 
 # all the kpm related text
-def kpm(im):
+'''def kpm(im):
     Y_POSITION = RIGHT_Y_POSITION + 500
-    background_functions.text_narrow(im, text="Squad Kills / Min:", color=(255,255,255), position=(LEFT_TEXT,Y_POSITION), font_size=38, anchor="lm")
+    background_functions.text_narrow(im, text="Squad Kills / Min:", color=(255,255,255), position=(LEFT_TEXT,Y_POSITION), font_size=38, anchor="lm")'''
 
 def level(im):
     Y_POSITION = RIGHT_Y_POSITION + 600
@@ -151,7 +155,8 @@ def create_stat_card(file_path, file_name):
 
     squad_members(im)
     kdr(im)
-    kpm(im)
+    coins(im)
+    #kpm(im)
     level(im)
 
     create_backgrounds(im)

@@ -131,6 +131,8 @@ def create_stat_card(stats):
         # KPM
         #(THIN, "Kills / Min", (LEFT_TEXT, RIGHT_Y_POSITION + 509), STAT_COLOR_WHITE, 38, "lm"),
         #(BOLD, str(round(float(stats['kpm']), 1)), (LEFT_TEXT, RIGHT_Y_POSITION + 500 + 45), STAT_COLOR_WHITE, 41, "lm"),
+        # COINS
+        (BOLD, format_large_number(stats['coins']), (LEFT_TEXT, RIGHT_Y_POSITION + 500 + 45), STAT_COLOR_WHITE, 41, "lm"),
         # LEVEL
         (BOLD, f"{stats['level']}", (LEFT_TEXT, RIGHT_Y_POSITION + 600 + 45), STAT_COLOR_WHITE, 41, "lm"),
         (BOLD, ["Total XP: ", format_large_number(stats['xp'])], (LEFT_TEXT, RIGHT_Y_POSITION + 615 + 75), [PERCENTILE_COLOR, STAT_COLOR_WHITE], 38, "lm"),
