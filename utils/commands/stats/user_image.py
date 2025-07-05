@@ -74,7 +74,7 @@ def create_stats_card(stats):
     # add name
     if stats["squad"] != "": # if player part of squad
         cairo_functions.calculate_length(BOLD, 38, f"{stats['squad']} {stats['nick']}")
-        text_elements.append((BOLD, [f"[{stats["squad"]}]", f"{stats['nick']}"], (1140, RIGHT_Y_POSITION + 190), [(156/255, 156/255, 248/255), username_color], 38, "mm"))
+        text_elements.append((BOLD, [f"[{stats['squad']}]", f"{stats['nick']}"], (1140, RIGHT_Y_POSITION + 190), [(156/255, 156/255, 248/255), username_color], 38, "mm"))
     else:
         text_elements.append((BOLD, f"{stats['nick']}", (1140, RIGHT_Y_POSITION + 190), username_color, 38, "mm"))
 

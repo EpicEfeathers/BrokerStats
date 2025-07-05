@@ -5,7 +5,7 @@ import random
 
 from dateutil.relativedelta import relativedelta
 from io import BytesIO
-from matplotlib import pyplot
+#from matplotlib import pyplot
 
 def calculate_kdr_changes(kills, deaths):
     """

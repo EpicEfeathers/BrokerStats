@@ -16,6 +16,7 @@ activity = discord.Activity(name = "my activity", type = discord.ActivityType.cu
 intents = discord.Intents().default()
 
 GUILDS = [discord.Object(id=1295425214020194304), discord.Object(id=901934922997055499)]
+#GUILDS = [discord.Object(id=1295425214020194304), discord.Object(id=901934922997055499)]
 SQUAD_LIST_URL = "https://wbapi.wbpjs.com/squad/getSquadList"
 
 # Mybot class
@@ -30,8 +31,10 @@ class Mybot(commands.Bot):
     async def setup_hook(self):
         # This copies the global commands over to your guild.
         for guild in GUILDS:
+        '''for guild in GUILDS:
             self.tree.copy_global_to(guild=guild)
-            await self.tree.sync(guild=guild)
+            await self.tree.sync(guild=guild)'''
+        await self.tree.sync()
 
         self.session = ClientSession() # setting here, as must be in async function
 

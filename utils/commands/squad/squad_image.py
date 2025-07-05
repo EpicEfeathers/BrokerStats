@@ -139,22 +139,22 @@ def create_stat_card(stats):
 
         # KILLS
         #(THIN, "Kills:", (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION - 45), STAT_COLOR_WHITE, 41, "lm"),
-        (BOLD, format_large_number(stats["kills"]), (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 25), STAT_COLOR_WHITE, 41, "lm"),
+        (BOLD, format_large_number(stats['kills']), (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 25), STAT_COLOR_WHITE, 41, "lm"),
         # DEATHS
         #(THIN, "Deaths:", (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION - 45), STAT_COLOR_WHITE, 41, "lm"),
-        (BOLD, format_large_number(stats["deaths"]), (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 25), STAT_COLOR_WHITE, 41, "lm"),
+        (BOLD, format_large_number(stats['deaths']), (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 25), STAT_COLOR_WHITE, 41, "lm"),
         # KILLS
         #(THIN, "Classic Wins:", (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + (SPACING + SIZE[1]) - 45), STAT_COLOR_WHITE, 41, "lm"),
-        (BOLD, format_large_number(stats["classic_wins"]), (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 25 + (SPACING + SIZE[1])), STAT_COLOR_WHITE, 41, "lm"),
+        (BOLD, format_large_number(stats['classic_wins']), (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 25 + (SPACING + SIZE[1])), STAT_COLOR_WHITE, 41, "lm"),
         # KILLS
         #(THIN, "BR Wins:", (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + (SPACING + SIZE[1])- 45), STAT_COLOR_WHITE, 41, "lm"),
-        (BOLD, format_large_number(stats["br_wins"]), (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 25 + (SPACING + SIZE[1])), STAT_COLOR_WHITE, 41, "lm"),
+        (BOLD, format_large_number(stats['br_wins']), (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 25 + (SPACING + SIZE[1])), STAT_COLOR_WHITE, 41, "lm"),
         # KILLS
         #(THIN, "Kills ELO", (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 2*(SPACING + SIZE[1]) - 45), STAT_COLOR_WHITE, 41, "lm"),
-        (BOLD, stats["kills_elo"], (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 25 + 2*(SPACING + SIZE[1])), STAT_COLOR_WHITE, 41, "lm"),
+        (BOLD, stats['kills_elo'], (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 25 + 2*(SPACING + SIZE[1])), STAT_COLOR_WHITE, 41, "lm"),
         # KILLS
         #(THIN, "Games ELO", (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 2*(SPACING + SIZE[1])- 45), STAT_COLOR_WHITE, 41, "lm"),
-        (BOLD, stats["games_elo"], (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 25 + 2*(SPACING + SIZE[1])), STAT_COLOR_WHITE, 41, "lm"),
+        (BOLD, stats['games_elo'], (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 25 + 2*(SPACING + SIZE[1])), STAT_COLOR_WHITE, 41, "lm"),
     ]
 
     surface = cairo_functions.add_text_to_image(text_elements, "utils/commands/squad/backgrounds")
