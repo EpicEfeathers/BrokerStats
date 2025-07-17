@@ -125,7 +125,7 @@ def create_stat_card(stats):
         # NAME
         (THIN, stats['squad_name'], (1140, RIGHT_Y_POSITION + 225), (156/255, 156/255, 248/255), 60, "mm"),
         # ACTIVE MEMBERS
-        ([BOLD, THIN], [str(stats['member_count']), f"({stats['seen_recently']} active this week)"], (LEFT_TEXT, RIGHT_Y_POSITION + 300 + 45), STAT_COLOR_WHITE, 41, "lm"),
+        ([BOLD, THIN], [str(len(stats['members'])), f"({stats['seen_recently']} active this week)"], (LEFT_TEXT, RIGHT_Y_POSITION + 300 + 45), STAT_COLOR_WHITE, 41, "lm"),
         # KDR
         (BOLD, str(round(float(stats['kdr']), 1)), (LEFT_TEXT, RIGHT_Y_POSITION + 401 + 45), STAT_COLOR_WHITE, 41, "lm"),
         # KPM
@@ -134,7 +134,7 @@ def create_stat_card(stats):
         # COINS
         (BOLD, format_large_number(stats['coins']), (LEFT_TEXT, RIGHT_Y_POSITION + 500 + 45), STAT_COLOR_WHITE, 41, "lm"),
         # LEVEL
-        (BOLD, f"{stats['level']}", (LEFT_TEXT, RIGHT_Y_POSITION + 600 + 45), STAT_COLOR_WHITE, 41, "lm"),
+        (BOLD, f"{stats['avg_level']}", (LEFT_TEXT, RIGHT_Y_POSITION + 600 + 45), STAT_COLOR_WHITE, 41, "lm"),
         (BOLD, ["Total XP: ", format_large_number(stats['xp'])], (LEFT_TEXT, RIGHT_Y_POSITION + 615 + 75), [PERCENTILE_COLOR, STAT_COLOR_WHITE], 38, "lm"),
 
         # KILLS
@@ -145,16 +145,16 @@ def create_stat_card(stats):
         (BOLD, format_large_number(stats['deaths']), (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 25), STAT_COLOR_WHITE, 41, "lm"),
         # KILLS
         #(THIN, "Classic Wins:", (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + (SPACING + SIZE[1]) - 45), STAT_COLOR_WHITE, 41, "lm"),
-        (BOLD, format_large_number(stats['classic_wins']), (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 25 + (SPACING + SIZE[1])), STAT_COLOR_WHITE, 41, "lm"),
+        (BOLD, format_large_number(sum(stats['classic_wins'].values())), (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 25 + (SPACING + SIZE[1])), STAT_COLOR_WHITE, 41, "lm"),
         # KILLS
         #(THIN, "BR Wins:", (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + (SPACING + SIZE[1])- 45), STAT_COLOR_WHITE, 41, "lm"),
         (BOLD, format_large_number(stats['br_wins']), (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 25 + (SPACING + SIZE[1])), STAT_COLOR_WHITE, 41, "lm"),
         # KILLS
         #(THIN, "Kills ELO", (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 2*(SPACING + SIZE[1]) - 45), STAT_COLOR_WHITE, 41, "lm"),
-        (BOLD, stats['kills_elo'], (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 25 + 2*(SPACING + SIZE[1])), STAT_COLOR_WHITE, 41, "lm"),
+        (BOLD, stats['avg_kills_elo'], (LEFT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 25 + 2*(SPACING + SIZE[1])), STAT_COLOR_WHITE, 41, "lm"),
         # KILLS
         #(THIN, "Games ELO", (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 2*(SPACING + SIZE[1])- 45), STAT_COLOR_WHITE, 41, "lm"),
-        (BOLD, stats['games_elo'], (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 25 + 2*(SPACING + SIZE[1])), STAT_COLOR_WHITE, 41, "lm"),
+        (BOLD, stats['avg_games_elo'], (RIGHT - (SIZE[0]/2) + 23, TOP_Y_POSITION + 25 + 2*(SPACING + SIZE[1])), STAT_COLOR_WHITE, 41, "lm"),
     ]
 
     surface = cairo_functions.add_text_to_image(text_elements, "utils/commands/squad/backgrounds")

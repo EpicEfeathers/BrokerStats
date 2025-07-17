@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup
 import aiohttp
 import asyncio
 from discord import app_commands
+import config
 
 # async API call
 async def fetch(session, url):
@@ -59,7 +60,8 @@ async def fetch_all(session, uid):
 
     # calculate kills (vehicle kills (minus the player vechile) + weapon kills)
     api_stats["kills"] = sum(value for key, value in kills_per_vehicle.items() if key != "v30")
-    api_stats["kills"] += sum(kills_per_weapon.values())
+    filtered_kills_per_weapon = {key: value for key, value in kills_per_weapon.items() if key not in config.vehicle_weapons}
+    api_stats["kills"] += sum(filtered_kills_per_weapon.values())
 
     # calculate deaths (weapon deaths + self-destructs)
     api_stats["deaths"] = sum(deaths_per_weapon.values())
